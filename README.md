@@ -1,7 +1,7 @@
-# BALES — High-Throughput ML Inference Gateway
+# BALES - High-Throughput ML Inference Gateway
 
 <p align="center">
-  <!-- Logo placeholder — add your logo here -->
+  <!-- Logo placeholder - add your logo here -->
   <img src="docs/assets/logo.png" alt="BALES Logo" width="180" />
 </p>
 
@@ -10,21 +10,21 @@
 </p>
 
 <p align="center">
-  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12-blue?logo=python" alt="Python 3.12" /></a>
-  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi" alt="FastAPI" /></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.14-blue?logo=python" alt="Python 3.14" /></a>
+  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/pypi/v/fastapi?label=FastAPI&logo=fastapi" alt="FastAPI" /></a>
   <a href="https://redis.io/"><img src="https://img.shields.io/badge/Redis-7.4-DC382D?logo=redis" alt="Redis" /></a>
-  <a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-2.6-EE4C2C?logo=pytorch" alt="PyTorch" /></a>
-  <a href="https://prometheus.io/"><img src="https://img.shields.io/badge/Prometheus-2.54-E6522C?logo=prometheus" alt="Prometheus" /></a>
-  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-24.0-2496ED?logo=docker" alt="Docker" /></a>
+  <a href="https://pytorch.org/"><img src="https://img.shields.io/pypi/v/torch?label=PyTorch&logo=pytorch" alt="PyTorch" /></a>
+  <a href="https://prometheus.io/"><img src="https://img.shields.io/pypi/v/prometheus-client?label=Prometheus&logo=prometheus" alt="Prometheus" /></a>
+  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-latest-2496ED?logo=docker" alt="Docker" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
 </p>
 
 <p align="center">
-  <a href="#-quick-start">Quick Start</a> •
-  <a href="#-architecture">Architecture</a> •
-  <a href="#-configuration">Configuration</a> •
-  <a href="#-benchmarking">Benchmarking</a> •
-  <a href="#-security">Security</a> •
+  <a href="#-quick-start">Quick Start</a> &bull;
+  <a href="#-architecture">Architecture</a> &bull;
+  <a href="#-configuration">Configuration</a> &bull;
+  <a href="#-benchmarking">Benchmarking</a> &bull;
+  <a href="#-security">Security</a> &bull;
   <a href="#-api-reference">API</a>
 </p>
 
@@ -60,7 +60,6 @@ Built with **FastAPI**, **PyTorch**, and **asyncio**, BALES is engineered for sa
   - [`POST /models/{model_id}/reload`](#post-modelsmodel_idreload)
   - [`GET /metrics`](#get-metrics)
 - [Development](#-development)
-- [License](#-license)
 
 ---
 
@@ -68,25 +67,21 @@ Built with **FastAPI**, **PyTorch**, and **asyncio**, BALES is engineered for sa
 
 ### Local Development
 
-**Prerequisites:** Python 3.12+, Redis 7+
+**Prerequisites:** Python 3.14+, Redis 7+, [uv](https://docs.astral.sh/uv/)
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/yourusername/bales.git
 cd bales
 
-# 2. Create a virtual environment
-python -m venv .venv
-source .venv/bin/activate
+# 2. Install dependencies (first time)
+uv sync --extra dev
 
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Start Redis (if not already running)
+# 3. Start Redis (if not already running)
 redis-server --save "" --appendonly no
 
-# 5. Run the server
-python main.py
+# 4. Run the server
+uv run python main.py
 ```
 
 The gateway will be available at `http://localhost:8000`.
@@ -108,33 +103,33 @@ docker compose --profile monitoring up --build
 ### Data Flow
 
 ```
-[Client] ──POST /infer──> [FastAPI Routes]
-                                │
-                                ▼
+[Client] --POST /infer--> [FastAPI Routes]
+                                |
+                                v
                         [Redis Priority Queue]
-                                │
-                                ▼
+                                |
+                                v
                         [Consumer Loop]
-                                │
-                                ▼
+                                |
+                                v
                         [Dynamic Batcher]
-                                │
-                                ▼
+                                |
+                                v
                         [PyTorch run_in_executor]
-                                │
-                                ▼
+                                |
+                                v
                         [Response Future resolved]
-                                │
-                                ▼
+                                |
+                                v
                         [Client receives JSON]
 ```
 
 ### Key Invariants
 
-1. **PyTorch inference NEVER runs on the event loop thread** — always dispatched via `run_in_executor`.
-2. **A request NEVER touches a half-loaded model during hot-swap** — atomic reference replacement under an async lock.
-3. **A request NEVER gets dropped during hot-swap** — in-flight requests hold a local reference to the old model until GC cleans up.
-4. **`request_id`** is the single source of truth linking API → queue → batcher → response.
+1. **PyTorch inference NEVER runs on the event loop thread** -- always dispatched via `run_in_executor`.
+2. **A request NEVER touches a half-loaded model during hot-swap** -- atomic reference replacement under an async lock.
+3. **A request NEVER gets dropped during hot-swap** -- in-flight requests hold a local reference to the old model until GC cleans up.
+4. **`request_id`** is the single source of truth linking API -> queue -> batcher -> response.
 5. **`pending_futures`** is the ONLY place futures are stored.
 
 ---
@@ -171,7 +166,7 @@ cp .env.example .env
 Test pure batching throughput (no HTTP or Redis overhead):
 
 ```bash
-python benchmarks/profile_batcher.py
+uv run python benchmarks/profile_batcher.py
 ```
 
 Targets:
@@ -180,18 +175,18 @@ Targets:
 
 ### Full-Stack Load Test
 
-Use Locust to benchmark the complete HTTP → Redis → Batcher pipeline:
+Use Locust to benchmark the complete HTTP -> Redis -> Batcher pipeline:
 
 ```bash
-locust -f benchmarks/locustfile.py \
+uv run locust -f benchmarks/locustfile.py \
   --headless -u 500 -r 100 \
   --run-time 60s --host http://localhost:8000
 ```
 
 Tuning tips:
-- If throughput is low → increase concurrent users (`-u`).
-- If P99 is high → reduce `BATCH_WINDOW_MS` or increase `THREAD_POOL_SIZE`.
-- If errors appear → check `/health` for queue backlog.
+- If throughput is low -> increase concurrent users (`-u`).
+- If P99 is high -> reduce `BATCH_WINDOW_MS` or increase `THREAD_POOL_SIZE`.
+- If errors appear -> check `/health` for queue backlog.
 
 ---
 
@@ -266,17 +261,11 @@ Prometheus scrape endpoint exposing `bales_requests_total`, `bales_request_laten
 
 ```bash
 # Run the test suite (requires Redis on localhost:6379)
-pytest tests/ -v
+uv run pytest tests/ -v
 
 # Run a specific test file
-pytest tests/test_integration.py -v
+uv run pytest tests/test_integration.py -v
 
 # Profile the batcher
-python benchmarks/profile_batcher.py
+uv run python benchmarks/profile_batcher.py
 ```
-
----
-
-## License
-
-[MIT](LICENSE)

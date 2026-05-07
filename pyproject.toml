@@ -1,0 +1,35 @@
+[project]
+name = "bales"
+version = "1.0.0"
+description = "High-throughput ML inference gateway with dynamic batching and priority scheduling"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "uvloop>=0.21.0",
+    "httptools>=0.6.4",
+    "pydantic>=2.11.0",
+    "pydantic-settings>=2.9.0",
+    "redis>=5.3.0",
+    "torch>=2.7.0",
+    "prometheus-client>=0.21.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.0",
+    "pytest-asyncio>=0.26.0",
+    "httpx>=0.28.0",
+    "locust>=2.36.0",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
