@@ -1,0 +1,44 @@
+services:
+  redis:
+    image: redis:7.4-alpine
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --save ""
+      --appendonly no
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  bales:
+    build: .
+    ports:
+      - "8000:8000"
+      - "9090:9090"
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - MAX_BATCH_SIZE=32
+      - BATCH_WINDOW_MS=5
+      - THREAD_POOL_SIZE=4
+      - LOG_LEVEL=warning
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 2G
+
+  prometheus:
+    image: prom/prometheus:v3.2.0
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9091:9090"
+    profiles: ["monitoring"]

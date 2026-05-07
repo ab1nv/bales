@@ -1,0 +1,13 @@
+fastapi>=0.115.0,<0.116.0
+uvicorn[standard]>=0.34.0,<0.35.0
+uvloop>=0.21.0,<0.22.0
+httptools>=0.6.4,<0.7.0
+pydantic>=2.11.0,<2.12.0
+pydantic-settings>=2.9.0,<2.10.0
+redis[asyncio]>=5.3.0,<5.4.0
+torch>=2.6.0,<2.7.0
+prometheus-client>=0.21.0,<0.22.0
+locust>=2.36.0,<2.37.0
+pytest>=8.4.0,<8.5.0
+pytest-asyncio>=0.26.0,<0.27.0
+httpx>=0.28.0,<0.29.0
