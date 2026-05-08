@@ -102,26 +102,24 @@ docker compose --profile monitoring up --build
 
 ### Data Flow
 
-```
-[Client] --POST /infer--> [FastAPI Routes]
-                                |
-                                v
-                        [Redis Priority Queue]
-                                |
-                                v
-                        [Consumer Loop]
-                                |
-                                v
-                        [Dynamic Batcher]
-                                |
-                                v
-                        [PyTorch run_in_executor]
-                                |
-                                v
-                        [Response Future resolved]
-                                |
-                                v
-                        [Client receives JSON]
+```mermaid
+flowchart TD
+    Client["Client"]
+    Routes["FastAPI Routes"]
+    Queue["Redis Priority Queue"]
+    Consumer["Consumer Loop"]
+    Batcher["Dynamic Batcher"]
+    Torch["PyTorch run_in_executor"]
+    Response["Response Future"]
+
+    Client -->|POST /infer| Routes
+    Routes -->|push request| Queue
+    Queue -->|pop batch| Consumer
+    Consumer -->|preprocess & submit| Batcher
+    Batcher -->|stack tensors| Torch
+    Torch -->|postprocess| Response
+    Response -->|resolve future| Routes
+    Routes -->|JSON response| Client
 ```
 
 ### Key Invariants
