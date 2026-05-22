@@ -8,7 +8,7 @@ from api.schemas import InferenceRequest
 from batcher.dynamic_batcher import batcher_registry
 from config import get_settings
 from models.registry import model_registry
-from queue.priority_queue import priority_queue
+from queues.priority_queue import priority_queue
 
 logger = logging.getLogger(__name__)
 settings = get_settings()

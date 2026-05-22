@@ -23,8 +23,8 @@ from config import get_settings
 from metrics.prometheus import record_request, render_metrics, metrics_content_type
 from models.registry import model_registry
 from models.stub_model import StubModel
-from queue.consumer import pending_futures, start_consumer
-from queue.priority_queue import priority_queue
+from queues.consumer import pending_futures, start_consumer
+from queues.priority_queue import priority_queue
 
 logger = logging.getLogger(__name__)
 settings = get_settings()

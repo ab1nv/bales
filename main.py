@@ -17,8 +17,8 @@ from batcher.dynamic_batcher import BatcherRegistry
 from config import get_settings
 from models.registry import model_registry
 from models.stub_model import StubModel
-from queue.consumer import stop_all_consumers
-from queue.priority_queue import priority_queue
+from queues.consumer import stop_all_consumers
+from queues.priority_queue import priority_queue
 
 settings = get_settings()
 
