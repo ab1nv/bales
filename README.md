@@ -1,8 +1,9 @@
 # BALES - High-Throughput ML Inference Gateway
 
 <p align="center">
-  <!-- Logo placeholder - add your logo here -->
-  <img src="docs/assets/logo.png" alt="BALES Logo" width="180" />
+  <a href="https://github.com/ab1nv/bales">
+    <img src="https://i.ibb.co/23GJHSh5/bales-logo-1.png" alt="BALES Logo" width="200" />
+  </a>
 </p>
 
 <p align="center">
@@ -11,11 +12,10 @@
 
 <p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.14-blue?logo=python" alt="Python 3.14" /></a>
-  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/pypi/v/fastapi?label=FastAPI&logo=fastapi" alt="FastAPI" /></a>
-  <a href="https://redis.io/"><img src="https://img.shields.io/badge/Redis-7.4-DC382D?logo=redis" alt="Redis" /></a>
-  <a href="https://pytorch.org/"><img src="https://img.shields.io/pypi/v/torch?label=PyTorch&logo=pytorch" alt="PyTorch" /></a>
-  <a href="https://prometheus.io/"><img src="https://img.shields.io/pypi/v/prometheus-client?label=Prometheus&logo=prometheus" alt="Prometheus" /></a>
-  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-latest-2496ED?logo=docker" alt="Docker" /></a>
+  <a href="https://github.com/ab1nv/bales/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/ab1nv/bales/ci.yml?branch=main&label=CI&logo=github" alt="CI" /></a>
+  <a href="https://github.com/ab1nv/bales/actions/workflows/docker-build.yml"><img src="https://img.shields.io/github/actions/workflow/status/ab1nv/bales/docker-build.yml?branch=main&label=Docker&logo=docker" alt="Docker Build" /></a>
+  <a href="https://codecov.io/gh/ab1nv/bales"><img src="https://img.shields.io/codecov/c/gh/ab1nv/bales?logo=codecov" alt="Coverage" /></a>
+  <a href="https://github.com/ab1nv/bales/pulls"><img src="https://img.shields.io/github/issues-pr/ab1nv/bales?label=PRs&logo=github" alt="Pull Requests" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
 </p>
 

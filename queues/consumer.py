@@ -4,8 +4,8 @@ import asyncio
 import logging
 import time
 
+import batcher.dynamic_batcher as batcher_module
 from api.schemas import InferenceRequest
-from batcher.dynamic_batcher import batcher_registry
 from config import get_settings
 from models.registry import model_registry
 from queues.priority_queue import priority_queue
@@ -80,7 +80,7 @@ async def _handle_item(req: InferenceRequest) -> None:
     model = model_registry.get(req.model_id)
     input_tensor = model.preprocess(req.payload)
 
-    batcher = batcher_registry.get_or_create(
+    batcher = batcher_module.batcher_registry.get_or_create(
         model_id=req.model_id,
         model_fn=model.run_batch,
         postprocess_fn=model.postprocess,
