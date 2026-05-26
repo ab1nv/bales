@@ -23,7 +23,7 @@ dev = [
     "httpx>=0.28.0",
     "locust>=2.36.0",
     "ruff>=0.11.0",
-    "pyright>=1.1.0",
+    "ty>=0.0.39",
 ]
 
 [[tool.uv.index]]
@@ -37,8 +37,3 @@ torch = { index = "pytorch-cpu" }
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
-[tool.pyright]
-pythonVersion = "3.14"
-venvPath = "."
-venv = ".venv"
-reportPrivateImportUsage = false

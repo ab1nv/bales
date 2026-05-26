@@ -29,8 +29,8 @@ jobs:
       - name: Format check with ruff
         run: uv run ruff format --check .
 
-      - name: Type check with pyright
-        run: uv run pyright
+      - name: Type check with ty
+        run: uv run ty check
 
   test:
     runs-on: ubuntu-latest
