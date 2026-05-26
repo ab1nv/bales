@@ -12,8 +12,8 @@
 
 <p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.14-blue?logo=python" alt="Python 3.14" /></a>
-  <a href="https://github.com/ab1nv/bales/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/ab1nv/bales/ci.yml?branch=main&label=CI&logo=github" alt="CI" /></a>
-  <a href="https://github.com/ab1nv/bales/actions/workflows/docker-build.yml"><img src="https://img.shields.io/github/actions/workflow/status/ab1nv/bales/docker-build.yml?branch=main&label=Docker&logo=docker" alt="Docker Build" /></a>
+  <a href="https://github.com/ab1nv/bales/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/ab1nv/bales/ci.yml?branch=master&label=CI&logo=github" alt="CI" /></a>
+  <a href="https://github.com/ab1nv/bales/actions/workflows/docker-build.yml"><img src="https://img.shields.io/github/actions/workflow/status/ab1nv/bales/docker-build.yml?branch=master&label=Docker&logo=docker" alt="Docker Build" /></a>
   <a href="https://codecov.io/gh/ab1nv/bales"><img src="https://img.shields.io/codecov/c/gh/ab1nv/bales?logo=codecov" alt="Coverage" /></a>
   <a href="https://github.com/ab1nv/bales/pulls"><img src="https://img.shields.io/github/issues-pr/ab1nv/bales?label=PRs&logo=github" alt="Pull Requests" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
