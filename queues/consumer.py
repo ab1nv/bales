@@ -82,7 +82,10 @@ async def _handle_item(req: InferenceRequest) -> None:
     model = model_registry.get(req.model_id)
     input_tensor = model.preprocess(req.payload)
 
-    batcher = batcher_module.batcher_registry.get_or_create(
+    registry = batcher_module.batcher_registry
+    if registry is None:
+        raise RuntimeError("BatcherRegistry has not been initialized")
+    batcher = registry.get_or_create(
         model_id=req.model_id,
         model_fn=model.run_batch,
         postprocess_fn=model.postprocess,
@@ -102,8 +105,9 @@ async def _handle_item(req: InferenceRequest) -> None:
         if pending_fut.done():
             # Already cancelled by timeout. Discard.
             return
-        if bf.exception():
-            pending_fut.set_exception(bf.exception())
+        exc = bf.exception()
+        if exc is not None:
+            pending_fut.set_exception(exc)
         else:
             pending_fut.set_result(bf.result())
 

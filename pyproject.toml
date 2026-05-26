@@ -36,3 +36,9 @@ torch = { index = "pytorch-cpu" }
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
+[tool.pyright]
+pythonVersion = "3.14"
+venvPath = "."
+venv = ".venv"
+reportPrivateImportUsage = false
