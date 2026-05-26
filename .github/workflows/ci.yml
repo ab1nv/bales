@@ -41,6 +41,8 @@ jobs:
           - 6379:6379
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -54,10 +56,11 @@ jobs:
         run: uv sync --frozen --extra dev
 
       - name: Run tests
-        run: uv run pytest tests/ -v --cov=bales --cov-report=xml
+        run: uv run pytest tests/ -v --cov=. --cov-report=xml
 
-      - name: Upload coverage
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
           fail_ci_if_error: false
