@@ -24,7 +24,9 @@ class InferenceRequest(BaseModel):
 
     request_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     model_id: str = Field(..., description="Which registered model to run")
-    model_type: str = Field(..., description="Logical group (e.g. 'classification', 'embedding')")
+    model_type: str = Field(
+        ..., description="Logical group (e.g. 'classification', 'embedding')"
+    )
     priority: Priority = Priority.NORMAL
     payload: dict[str, Any] = Field(..., description="Raw input dict; model-specific")
 
@@ -42,15 +44,21 @@ class InferenceResponse(BaseModel):
     request_id: str
     model_id: str
     result: Any
-    latency_ms: float = Field(..., description="Wall time from model call start to return")
+    latency_ms: float = Field(
+        ..., description="Wall time from model call start to return"
+    )
     batch_size: int = Field(..., description="How many requests were in the same batch")
-    queued_ms: float = Field(..., description="Time spent waiting in queue before batching")
+    queued_ms: float = Field(
+        ..., description="Time spent waiting in queue before batching"
+    )
 
 
 class HotSwapRequest(BaseModel):
     """Request to hot-swap a model's weights."""
 
-    weights_path: str = Field(..., description="Absolute or relative path to new .pt weights file")
+    weights_path: str = Field(
+        ..., description="Absolute or relative path to new .pt weights file"
+    )
 
 
 class HotSwapResponse(BaseModel):

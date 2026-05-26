@@ -60,7 +60,9 @@ async def infer(req: InferenceRequest) -> InferenceResponse:
 
     # Validate model exists before queuing
     if req.model_id not in model_registry:
-        raise HTTPException(status_code=404, detail=f"Model '{req.model_id}' not registered")
+        raise HTTPException(
+            status_code=404, detail=f"Model '{req.model_id}' not registered"
+        )
 
     # Step 1: Create future BEFORE pushing to queue (see race condition note above)
     loop = asyncio.get_event_loop()
@@ -84,7 +86,7 @@ async def infer(req: InferenceRequest) -> InferenceResponse:
         record_request(req.model_id, "timeout", wall_ms, 0)
         raise HTTPException(
             status_code=504,
-            detail=f"Inference timeout after {settings.batcher_timeout_s}s for request_id={req.request_id}"
+            detail=f"Inference timeout after {settings.batcher_timeout_s}s for request_id={req.request_id}",
         )
     except Exception as e:
         pending_futures.pop(req.request_id, None)
@@ -124,26 +126,31 @@ async def reload_model(model_id: str, body: HotSwapRequest) -> HotSwapResponse:
         - The swap lock in registry ensures no request sees a half-constructed model
     """
     if model_id not in model_registry:
-        raise HTTPException(status_code=404, detail=f"Model '{model_id}' not registered")
+        raise HTTPException(
+            status_code=404, detail=f"Model '{model_id}' not registered"
+        )
 
     # Security: validate weights_path is a real file path, not a command
     weights_path = Path(body.weights_path)
     if not weights_path.exists():
-        raise HTTPException(status_code=400, detail=f"Weights file not found: {body.weights_path}")
+        raise HTTPException(
+            status_code=400, detail=f"Weights file not found: {body.weights_path}"
+        )
 
     try:
         # Load new model in thread pool (may involve disk I/O)
         loop = asyncio.get_event_loop()
         new_model = await loop.run_in_executor(
-            None,
-            lambda: _load_model_from_path(model_id, str(weights_path))
+            None, lambda: _load_model_from_path(model_id, str(weights_path))
         )
         await model_registry.hot_swap(model_id, new_model)
 
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except FileNotFoundError:
-        raise HTTPException(status_code=400, detail=f"Weights file not found: {body.weights_path}")
+        raise HTTPException(
+            status_code=400, detail=f"Weights file not found: {body.weights_path}"
+        )
     except Exception as e:
         logger.error(f"[routes] hot-swap failed for {model_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Hot-swap failed: {str(e)}")
@@ -168,9 +175,9 @@ def _load_model_from_path(model_id: str, weights_path: str):
 @router.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
     """Returns:
-        - registered model IDs
-        - queue depths per model_type
-        - number of in-flight (pending) requests
+    - registered model IDs
+    - queue depths per model_type
+    - number of in-flight (pending) requests
     """
     queue_lengths = await priority_queue.all_lengths()
     return HealthResponse(

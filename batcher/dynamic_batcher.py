@@ -20,9 +20,9 @@ class _QueueItem:
     """Internal: one request waiting to be batched."""
 
     request_id: str
-    enqueue_time: float         # time.monotonic() when submitted to batcher
+    enqueue_time: float  # time.monotonic() when submitted to batcher
     input_tensor: torch.Tensor  # shape: [*input_dims], no batch dim
-    future: asyncio.Future      # resolved with InferenceResponse dict when done
+    future: asyncio.Future  # resolved with InferenceResponse dict when done
 
 
 @dataclass
@@ -30,10 +30,10 @@ class BatchResult:
     """What the batcher resolves each future with."""
 
     request_id: str
-    result: Any                 # postprocessed output
+    result: Any  # postprocessed output
     latency_ms: float
     batch_size: int
-    queued_ms: float            # time from submit() to dispatch
+    queued_ms: float  # time from submit() to dispatch
 
 
 class DynamicBatcher:
@@ -77,11 +77,15 @@ class DynamicBatcher:
         Must be called from within a running event loop (inside async context or lifespan).
         """
         if self._running:
-            logger.warning(f"[batcher:{self.model_id}] already running, ignoring start()")
+            logger.warning(
+                f"[batcher:{self.model_id}] already running, ignoring start()"
+            )
             return
         self._running = True
         self._task = asyncio.create_task(self._run(), name=f"batcher-{self.model_id}")
-        logger.info(f"[batcher:{self.model_id}] started (window={self._window_s*1000:.1f}ms max_batch={self._max_batch_size})")
+        logger.info(
+            f"[batcher:{self.model_id}] started (window={self._window_s * 1000:.1f}ms max_batch={self._max_batch_size})"
+        )
 
     async def stop(self) -> None:
         """Graceful shutdown:
@@ -100,7 +104,9 @@ class DynamicBatcher:
                 pass
         logger.info(f"[batcher:{self.model_id}] stopped")
 
-    async def submit(self, request_id: str, input_tensor: torch.Tensor, enqueue_time: float) -> asyncio.Future:
+    async def submit(
+        self, request_id: str, input_tensor: torch.Tensor, enqueue_time: float
+    ) -> asyncio.Future:
         """Submit one request to be batched.
 
         Returns a Future that will be resolved with a BatchResult dict.
@@ -151,10 +157,7 @@ class DynamicBatcher:
                 if remaining <= 0:
                     break
                 try:
-                    item = await asyncio.wait_for(
-                        self._queue.get(),
-                        timeout=remaining
-                    )
+                    item = await asyncio.wait_for(self._queue.get(), timeout=remaining)
                     batch.append(item)
                 except asyncio.TimeoutError:
                     break
@@ -179,9 +182,7 @@ class DynamicBatcher:
             loop = asyncio.get_event_loop()
             t_inference_start = time.monotonic()
             output_batch: torch.Tensor = await loop.run_in_executor(
-                self._executor,
-                self._model_fn,
-                stacked
+                self._executor, self._model_fn, stacked
             )
             latency_ms = (time.monotonic() - t_inference_start) * 1000.0
 
@@ -193,15 +194,19 @@ class DynamicBatcher:
                     single_output = output_batch[i]
                     result = self._postprocess_fn(single_output)
                     queued_ms = (dispatch_time - item.enqueue_time) * 1000.0
-                    item.future.set_result({
-                        "request_id": item.request_id,
-                        "result": result,
-                        "latency_ms": round(latency_ms, 3),
-                        "batch_size": len(batch),
-                        "queued_ms": round(queued_ms, 3),
-                    })
+                    item.future.set_result(
+                        {
+                            "request_id": item.request_id,
+                            "result": result,
+                            "latency_ms": round(latency_ms, 3),
+                            "batch_size": len(batch),
+                            "queued_ms": round(queued_ms, 3),
+                        }
+                    )
                 except Exception as e:
-                    logger.error(f"[batcher:{self.model_id}] postprocess error for {item.request_id}: {e}")
+                    logger.error(
+                        f"[batcher:{self.model_id}] postprocess error for {item.request_id}: {e}"
+                    )
                     item.future.set_exception(e)
 
         except Exception as e:

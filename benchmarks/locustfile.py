@@ -23,20 +23,28 @@ class InferenceUser(HttpUser):
 
     @task(9)  # 90% normal inference
     def infer_normal(self):
-        self.client.post("/infer", json={
-            "request_id": str(uuid.uuid4()),
-            "model_id": "stub_v1",
-            "model_type": "classification",
-            "priority": 2,  # NORMAL
-            "payload": {"input": [0.1] * 128},
-        }, name="/infer (NORMAL)")
+        self.client.post(
+            "/infer",
+            json={
+                "request_id": str(uuid.uuid4()),
+                "model_id": "stub_v1",
+                "model_type": "classification",
+                "priority": 2,  # NORMAL
+                "payload": {"input": [0.1] * 128},
+            },
+            name="/infer (NORMAL)",
+        )
 
     @task(1)  # 10% high priority
     def infer_high(self):
-        self.client.post("/infer", json={
-            "request_id": str(uuid.uuid4()),
-            "model_id": "stub_v1",
-            "model_type": "classification",
-            "priority": 1,  # HIGH
-            "payload": {"input": [0.9] * 128},
-        }, name="/infer (HIGH)")
+        self.client.post(
+            "/infer",
+            json={
+                "request_id": str(uuid.uuid4()),
+                "model_id": "stub_v1",
+                "model_type": "classification",
+                "priority": 1,  # HIGH
+                "payload": {"input": [0.9] * 128},
+            },
+            name="/infer (HIGH)",
+        )

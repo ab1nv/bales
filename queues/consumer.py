@@ -53,7 +53,9 @@ async def consume_loop(model_type: str, poll_interval_s: float = 0.001) -> None:
                     req = InferenceRequest(**item_dict)
                     await _handle_item(req)
                 except Exception as e:
-                    logger.error(f"[consumer] failed to handle item: {e} -- item={str(item_dict)[:100]}")
+                    logger.error(
+                        f"[consumer] failed to handle item: {e} -- item={str(item_dict)[:100]}"
+                    )
                     # Resolve the pending future with error if it exists
                     fut = pending_futures.pop(item_dict.get("request_id", ""), None)
                     if fut and not fut.done():

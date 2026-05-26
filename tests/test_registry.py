@@ -7,15 +7,16 @@ pytestmark = pytest.mark.asyncio
 
 
 class TestModelRegistry:
-
     @pytest_asyncio.fixture
     async def registry(self):
         from models.registry import ModelRegistry
+
         return ModelRegistry()
 
     @pytest_asyncio.fixture
     async def stub(self):
         from models.stub_model import StubModel
+
         return StubModel()
 
     async def test_register_and_get(self, registry, stub):
@@ -44,6 +45,7 @@ class TestModelRegistry:
 
     async def test_hot_swap_replaces_model(self, registry, stub):
         from models.stub_model import StubModel
+
         await registry.register("swap_me", stub)
         new_model = StubModel()
         await registry.hot_swap("swap_me", new_model)

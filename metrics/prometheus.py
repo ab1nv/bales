@@ -1,6 +1,12 @@
 """Prometheus metrics for observability."""
 
-from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    Counter,
+    Gauge,
+    Histogram,
+    generate_latest,
+)
 
 # Total inference requests, labelled by model_id and status (success|error|timeout)
 REQUEST_COUNT = Counter(
@@ -33,7 +39,9 @@ QUEUE_DEPTH = Gauge(
 )
 
 
-def record_request(model_id: str, status: str, latency_ms: float, batch_size: int) -> None:
+def record_request(
+    model_id: str, status: str, latency_ms: float, batch_size: int
+) -> None:
     """Call this once per completed (or failed) request."""
     REQUEST_COUNT.labels(model_id=model_id, status=status).inc()
     REQUEST_LATENCY.labels(model_id=model_id).observe(latency_ms)

@@ -54,7 +54,9 @@ class ModelRegistry:
             raise TypeError(f"model must be a BaseModel subclass, got {type(model)}")
         async with self._swap_lock:
             self._models[model_id] = model
-        logger.info(f"[registry] registered model_id='{model_id}' type={type(model).__name__}")
+        logger.info(
+            f"[registry] registered model_id='{model_id}' type={type(model).__name__}"
+        )
 
     async def hot_swap(self, model_id: str, new_model: BaseModel) -> None:
         """Replace a live model atomically. The new model must already be
@@ -64,7 +66,9 @@ class ModelRegistry:
         this method only does the atomic swap.
         """
         if model_id not in self._models:
-            raise KeyError(f"Cannot hot-swap '{model_id}': not currently registered. Use register() first.")
+            raise KeyError(
+                f"Cannot hot-swap '{model_id}': not currently registered. Use register() first."
+            )
         async with self._swap_lock:
             old = self._models[model_id]
             self._models[model_id] = new_model

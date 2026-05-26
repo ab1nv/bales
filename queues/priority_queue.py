@@ -56,7 +56,9 @@ class RedisPriorityQueue:
         score = self._score(request.priority)
         member = request.model_dump_json()
         await self._redis.zadd(key, {member: score})
-        logger.debug(f"[queue] pushed request_id={request.request_id} model_type={request.model_type} priority={request.priority.name} score={score}")
+        logger.debug(
+            f"[queue] pushed request_id={request.request_id} model_type={request.model_type} priority={request.priority.name} score={score}"
+        )
 
     async def pop_batch(self, model_type: str, max_size: int) -> list[dict[str, Any]]:
         """Atomically pop up to max_size highest-priority items from model_type's queue.
@@ -74,7 +76,9 @@ class RedisPriorityQueue:
             try:
                 deserialized.append(json.loads(member))
             except json.JSONDecodeError:
-                logger.error(f"[queue] failed to deserialize queue member: {member[:100]}")
+                logger.error(
+                    f"[queue] failed to deserialize queue member: {member[:100]}"
+                )
         return deserialized
 
     async def length(self, model_type: str) -> int:

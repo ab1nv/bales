@@ -15,6 +15,7 @@ pytestmark = pytest.mark.asyncio
 async def app():
     """Create and start the full app. Yields ASGI app."""
     from main import create_app
+
     application = create_app()
     async with application.router.lifespan_context(application):
         yield application
@@ -22,12 +23,13 @@ async def app():
 
 @pytest_asyncio.fixture
 async def client(app):
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         yield c
 
 
 class TestIntegration:
-
     async def test_health_returns_registered_model(self, client):
         r = await client.get("/health")
         assert r.status_code == 200
@@ -71,10 +73,19 @@ class TestIntegration:
     async def test_concurrent_requests(self, client):
         """50 concurrent requests all succeed."""
         import asyncio
+
         payloads = [
-            {"model_id": "stub_v1", "model_type": "classification", "payload": {"input": [float(i % 10) / 10] * 128}}
+            {
+                "model_id": "stub_v1",
+                "model_type": "classification",
+                "payload": {"input": [float(i % 10) / 10] * 128},
+            }
             for i in range(50)
         ]
-        responses = await asyncio.gather(*[client.post("/infer", json=p) for p in payloads])
+        responses = await asyncio.gather(
+            *[client.post("/infer", json=p) for p in payloads]
+        )
         statuses = [r.status_code for r in responses]
-        assert all(s == 200 for s in statuses), f"Some failed: {[s for s in statuses if s != 200]}"
+        assert all(s == 200 for s in statuses), (
+            f"Some failed: {[s for s in statuses if s != 200]}"
+        )

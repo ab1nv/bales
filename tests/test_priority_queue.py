@@ -21,6 +21,7 @@ class TestRedisPriorityQueue:
     @pytest_asyncio.fixture(autouse=True)
     async def setup(self):
         import redis.asyncio as aioredis
+
         self.r = aioredis.from_url("redis://localhost:6379/15", decode_responses=True)
         await self.r.flushdb()
         yield
@@ -31,6 +32,7 @@ class TestRedisPriorityQueue:
         """Pushing one item and popping it returns that item."""
         from api.schemas import InferenceRequest, Priority
         from queues.priority_queue import RedisPriorityQueue
+
         pq = RedisPriorityQueue("redis://localhost:6379/15")
 
         req = InferenceRequest(
@@ -49,10 +51,21 @@ class TestRedisPriorityQueue:
         """CRITICAL requests are popped before LOW requests regardless of insertion order."""
         from api.schemas import InferenceRequest, Priority
         from queues.priority_queue import RedisPriorityQueue
+
         pq = RedisPriorityQueue("redis://localhost:6379/15")
 
-        low_req = InferenceRequest(model_id="m", model_type="t", priority=Priority.LOW, payload={"input": [0.1]*128})
-        crit_req = InferenceRequest(model_id="m", model_type="t", priority=Priority.CRITICAL, payload={"input": [0.1]*128})
+        low_req = InferenceRequest(
+            model_id="m",
+            model_type="t",
+            priority=Priority.LOW,
+            payload={"input": [0.1] * 128},
+        )
+        crit_req = InferenceRequest(
+            model_id="m",
+            model_type="t",
+            priority=Priority.CRITICAL,
+            payload={"input": [0.1] * 128},
+        )
 
         # Push LOW first, then CRITICAL
         await pq.push(low_req)
@@ -69,11 +82,17 @@ class TestRedisPriorityQueue:
         """Within the same priority, earlier arrivals are popped first."""
         from api.schemas import InferenceRequest, Priority
         from queues.priority_queue import RedisPriorityQueue
+
         pq = RedisPriorityQueue("redis://localhost:6379/15")
 
         reqs = []
         for i in range(5):
-            r = InferenceRequest(model_id="m", model_type="t", priority=Priority.NORMAL, payload={"input": [float(i)]*128})
+            r = InferenceRequest(
+                model_id="m",
+                model_type="t",
+                priority=Priority.NORMAL,
+                payload={"input": [float(i)] * 128},
+            )
             reqs.append(r)
             await pq.push(r)
             await asyncio.sleep(0.001)
@@ -85,6 +104,7 @@ class TestRedisPriorityQueue:
 
     async def test_pop_empty_returns_empty_list(self):
         from queues.priority_queue import RedisPriorityQueue
+
         pq = RedisPriorityQueue("redis://localhost:6379/15")
         items = await pq.pop_batch("nonexistent_type", max_size=10)
         assert items == []
@@ -92,10 +112,13 @@ class TestRedisPriorityQueue:
     async def test_pop_respects_max_size(self):
         from api.schemas import InferenceRequest
         from queues.priority_queue import RedisPriorityQueue
+
         pq = RedisPriorityQueue("redis://localhost:6379/15")
 
         for _ in range(20):
-            r = InferenceRequest(model_id="m", model_type="t", payload={"input": [0.1]*128})
+            r = InferenceRequest(
+                model_id="m", model_type="t", payload={"input": [0.1] * 128}
+            )
             await pq.push(r)
 
         items = await pq.pop_batch("t", max_size=5)

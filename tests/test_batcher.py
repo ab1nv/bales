@@ -34,7 +34,6 @@ def make_batcher(window_ms=50.0, max_batch=8):
 
 
 class TestDynamicBatcher:
-
     async def test_single_request_resolves(self):
         """A single submitted request is processed and future resolved."""
         batcher, executor = make_batcher(window_ms=50)
@@ -57,12 +56,16 @@ class TestDynamicBatcher:
         batcher.start()
 
         tensors = [torch.tensor([float(i)] * 4) for i in range(8)]
-        futures = await asyncio.gather(*[
-            batcher.submit(f"req-{i}", t, time.monotonic())
-            for i, t in enumerate(tensors)
-        ])
+        futures = await asyncio.gather(
+            *[
+                batcher.submit(f"req-{i}", t, time.monotonic())
+                for i, t in enumerate(tensors)
+            ]
+        )
 
-        results = await asyncio.gather(*[asyncio.wait_for(f, timeout=2.0) for f in futures])
+        results = await asyncio.gather(
+            *[asyncio.wait_for(f, timeout=2.0) for f in futures]
+        )
 
         batch_sizes = {r["batch_size"] for r in results}
         # All requests should have been in one batch (or at most 2 due to timing)
@@ -80,12 +83,16 @@ class TestDynamicBatcher:
         batcher.start()
 
         tensors = [torch.tensor([1.0]) for _ in range(10)]
-        futures = await asyncio.gather(*[
-            batcher.submit(f"req-{i}", t, time.monotonic())
-            for i, t in enumerate(tensors)
-        ])
+        futures = await asyncio.gather(
+            *[
+                batcher.submit(f"req-{i}", t, time.monotonic())
+                for i, t in enumerate(tensors)
+            ]
+        )
 
-        results = await asyncio.gather(*[asyncio.wait_for(f, timeout=3.0) for f in futures])
+        results = await asyncio.gather(
+            *[asyncio.wait_for(f, timeout=3.0) for f in futures]
+        )
         assert len(results) == 10
         assert all(r["batch_size"] <= 4 for r in results)
 
