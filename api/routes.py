@@ -5,7 +5,6 @@ POST /models/{model_id}/reload. This is where HTTP meets the async pipeline.
 import asyncio
 import logging
 import time
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException

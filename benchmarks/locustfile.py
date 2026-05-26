@@ -39,4 +39,4 @@ class InferenceUser(HttpUser):
             "model_type": "classification",
             "priority": 1,  # HIGH
             "payload": {"input": [0.9] * 128},
-        }, name="/infer (HIGH)
+        }, name="/infer (HIGH)")

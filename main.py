@@ -2,7 +2,6 @@
 all singletons together. This is the only place where global state is initialized.
 """
 
-import asyncio
 import logging
 import logging.config
 from concurrent.futures import ThreadPoolExecutor
