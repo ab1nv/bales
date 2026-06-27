@@ -132,13 +132,14 @@ class DynamicBatcher:
         Collection strategy:
             - Wait up to window_s for first item (asyncio.wait_for on Queue.get)
             - Once first item arrives, collect more until window expires OR batch full
-            - Dispatch whatever was collected (even batch of 1)
+            - Await synchronous dispatch (avoids executor thread contention)
             - Immediately start next window
 
         This ensures:
             - We never hold items longer than window_s regardless of load
             - Under high load, batches fill to max_batch_size quickly
             - Under low load, single requests don't wait longer than window_s
+            - Executor threads never contend (one batch in-flight per batcher)
         """
         while self._running:
             batch: list[_QueueItem] = []
@@ -162,10 +163,9 @@ class DynamicBatcher:
                 except asyncio.TimeoutError:
                     break
 
-            # Step 3: Dispatch
+            # Step 3: Dispatch synchronously to avoid executor overload
             if batch:
-                # Fire-and-forget dispatch -- don't await, start next window immediately
-                asyncio.create_task(self._dispatch(batch))
+                await self._dispatch(batch)
 
     async def _dispatch(self, batch: list[_QueueItem]) -> None:
         """Stack tensors -> run model in executor -> postprocess -> resolve futures.
