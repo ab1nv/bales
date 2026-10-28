@@ -1,0 +1,9 @@
+bin/
+*.test
+*.out
+coverage.*
+.DS_Store
+.env
+reports/.build/
+archive/.build/
+presentation/.DS_Store
