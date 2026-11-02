@@ -34,6 +34,7 @@ type Request struct {
 	Class     Class
 	EstCostMS float64
 	Slack     time.Duration
+	Meta      any // caller payload, opaque to the queue
 }
 
 // Config controls deadline offsets and admission.
