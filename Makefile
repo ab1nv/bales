@@ -8,8 +8,6 @@ build:
 	@mkdir -p $(BIN)
 	go build $(GOFLAGS) -o $(BIN)/bales-gateway ./cmd/gateway
 	go build $(GOFLAGS) -o $(BIN)/bales-mockworker ./cmd/mockworker
-	go build $(GOFLAGS) -o $(BIN)/bales-simulate ./cmd/simulate
-	go build $(GOFLAGS) -o $(BIN)/bales-calibrate ./cmd/calibrate
 
 test:
 	go test ./...
