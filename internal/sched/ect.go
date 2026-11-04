@@ -33,8 +33,9 @@ func DefaultECTConfig() ECTConfig {
 // ECT is the Bales earliest-completion-time policy. All terms are milliseconds,
 // so there are no unitless weights to tune for the main score.
 type ECT struct {
-	Model cost.Model
-	Cfg   ECTConfig
+	Model     cost.Model
+	Cfg       ECTConfig
+	UseLinear bool
 }
 
 // NewECT creates the policy.
@@ -42,7 +43,12 @@ func NewECT(model cost.Model, cfg ECTConfig) *ECT {
 	return &ECT{Model: model, Cfg: cfg}
 }
 
-func (p *ECT) Name() string { return "bales_ect" }
+func (p *ECT) Name() string {
+	if p.UseLinear {
+		return "bales_ect_linear"
+	}
+	return "bales_ect"
+}
 
 func (p *ECT) Pick(req Request, reps []Replica) (int, string) {
 	best := -1
@@ -67,6 +73,9 @@ func (p *ECT) Pick(req Request, reps []Replica) (int, string) {
 		}
 		wait := r.QueuedMS
 		prefill := p.Model.Cost(unc, cached) / speed(r)
+		if p.UseLinear {
+			prefill = p.Model.LinearCost(unc) / speed(r)
+		}
 		interference := 0.0
 		if req.Stream && r.InFlight > 0 {
 			interference = p.Cfg.InterferenceMS*float64(r.InFlight) +

@@ -61,6 +61,10 @@ func New(name string, model cost.Model) (Policy, error) {
 		return &BalesScore{}, nil
 	case "bales_ect":
 		return NewECT(model, DefaultECTConfig()), nil
+	case "bales_ect_linear":
+		ect := NewECT(model, DefaultECTConfig())
+		ect.UseLinear = true
+		return ect, nil
 	default:
 		return nil, fmt.Errorf("sched: unknown policy %q", name)
 	}
@@ -71,7 +75,7 @@ func Names() []string {
 	return []string{
 		"round_robin", "least_conn", "least_tokens", "llmd_style",
 		"dynamo_approx", "dualmap", "preble_e2", "cacheroute_style",
-		"bales_score", "bales_ect",
+		"bales_score", "bales_ect", "bales_ect_linear",
 	}
 }
 
