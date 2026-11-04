@@ -108,7 +108,7 @@ func (c *Coalescer) Decide(a Arrival) Decision {
 	saving := c.model.Saving(a.QTokens, a.SharedTokens)
 	d := Decision{Action: Spill, Leader: g, SavingMS: saving}
 
-	if a.QTokens <= 0 || a.SharedTokens <= 0 {
+	if a.SharedTokens <= 0 {
 		d.Reason = "no shared prefix"
 		return d
 	}

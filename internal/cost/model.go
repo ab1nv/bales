@@ -51,12 +51,16 @@ func (m Model) HitValue(l int) float64 {
 	return math.Max(0, m.Cost(l, 0)-m.G)
 }
 
-// Saving returns the exact work avoided when the first l tokens of a q-token
-// query are cached: cost(q+l, 0) - cost(q, l). With A equal to B this equals
-// HitValue(l); when they differ, the cross term (B-A)*q*l remains.
+// Saving returns the exact work avoided when the first l tokens of a prompt are
+// cached: cost(q+l, 0) - cost(q, l), where q is the uncached suffix length. With
+// A equal to B this equals HitValue(l); when they differ, the cross term
+// (B-A)*q*l remains. q may be zero for a fully cached prompt.
 func (m Model) Saving(q, l int) float64 {
-	if q <= 0 || l <= 0 {
+	if l <= 0 {
 		return 0
+	}
+	if q < 0 {
+		q = 0
 	}
 	return math.Max(0, m.Cost(q+l, 0)-m.Cost(q, l))
 }

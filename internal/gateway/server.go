@@ -431,7 +431,7 @@ func (s *Server) dispatch(pr *pendingReq) {
 		}
 		d := s.coal.Decide(coalesce.Arrival{
 			Key:          pr.key,
-			QTokens:      pr.promptTokens,
+			QTokens:      0,
 			SharedTokens: pr.promptTokens,
 			WaitLeaderMS: waitLeader,
 			WaitBestMS:   waitBest,

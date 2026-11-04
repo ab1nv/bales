@@ -24,7 +24,7 @@ func TestCostMonotonic(t *testing.T) {
 func TestSavingIdentityWhenCoefficientsEqual(t *testing.T) {
 	m := Model{A: 5e-6, B: 5e-6, F: 0.04, G: 2.5}
 	cases := []struct{ q, l int }{
-		{1, 1}, {64, 512}, {200, 1600}, {1800, 8192}, {4096, 16384},
+		{0, 1}, {0, 4096}, {1, 1}, {64, 512}, {200, 1600}, {1800, 8192}, {4096, 16384},
 	}
 	for _, tc := range cases {
 		got := m.Saving(tc.q, tc.l)

@@ -88,7 +88,7 @@ func TestDecideHoldOrSpill(t *testing.T) {
 		Now:            testClock(base),
 	}
 	const key = 99
-	const q = 200
+	const q = 0
 	saving := model.Saving(q, 4096)
 
 	cases := []struct {
