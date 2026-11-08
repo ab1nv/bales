@@ -1,0 +1,5 @@
+ts,request_id,tenant,class,model,prompt_tokens,predicted_cached_tokens,engine_cached_tokens,group_id,replica,policy,policy_reason,coalesced,hold_ms,hold_outcome,queue_wait_ms,prefill_est_ms,ttft_ms,total_ms,completion_tokens,status,stream,slack_ms,error
+2026-11-16T01:15:25.212113+05:30,req-1,default,stream,mock,4502,0,0,8959fb64cc2bbfc1,0,bales_ect,lowest ECT,false,0.000,leader,0.016,298.013,301.126,328.637,12,200,true,2000.000,
+2026-11-16T01:15:25.218717+05:30,req-3,default,stream,mock,4502,4502,4502,8959fb64cc2bbfc1,0,bales_ect,leader cache,true,224.544,released,0.009,5.000,6.592,34.065,12,200,true,2000.000,
+2026-11-16T01:15:25.218825+05:30,req-4,default,stream,mock,4502,4502,4502,8959fb64cc2bbfc1,0,bales_ect,leader cache,true,186.674,released,0.010,5.000,6.606,34.181,12,200,true,2000.000,
+2026-11-16T01:15:25.248612+05:30,req-2,default,stream,mock,4502,0,0,8959fb64cc2bbfc1,1,bales_ect,hold exceeds cap; lowest ECT,true,0.000,spilled,0.017,298.013,299.084,326.807,12,200,true,2000.000,

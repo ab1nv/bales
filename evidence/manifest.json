@@ -1,0 +1,25 @@
+{
+  "project": "bales",
+  "branch": "proto",
+  "commit": "32409b55ce30b13f3ddd43dac6d342c19e0cdde5",
+  "generated_on": "2026-11-16",
+  "host": {
+    "os": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5"
+  },
+  "go": "go1.27.4",
+  "commands": {
+    "test": "go test ./...",
+    "race": "go test -race ./...",
+    "bench": "go test -run '^$' -bench . -benchmem -benchtime=1s ./internal/...",
+    "simulate": "go run ./cmd/simulate -exp all -out evidence/runs -seeds 3"
+  },
+  "seeds": 3,
+  "replicas": 4,
+  "notes": [
+    "Cluster results are simulated with a single-slot prefill model, not GPU measurements.",
+    "Baselines are simplified ports and have not received a full tuning budget.",
+    "Microbenchmarks ran on an Apple M5 host, not on a T4."
+  ]
+}

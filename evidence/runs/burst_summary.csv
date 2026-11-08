@@ -1,0 +1,6 @@
+experiment,policy,parameter,coalesce,seed,replicas,requests,mean_ttft_ms,p50_ms,p95_ms,p99_ms,follower_p50_ms,follower_p99_ms,prefill_ms,duplicate_ratio,slo_goodput,stream_p99_ms,batch_p99_wait_ms,batch_max_wait_ms,coalesced_requests,hold_requests,hold_released,gate_action,gate_replicas
+burst,round_robin,stagger=3ms,false,1,4,32,504.560,504.560,887.662,887.662,559.289,887.662,3886.649,0.969,10.346,887.662,0.000,0.000,0,0,0,,0
+burst,llmd_style,stagger=3ms,false,1,4,32,1957.553,1957.553,3610.039,3756.927,2016.782,3758.112,3886.649,0.969,5.173,3756.927,0.000,0.000,0,0,0,,0
+burst,bales_ect_linear,stagger=3ms,false,1,4,32,504.560,504.560,887.662,887.662,559.289,887.662,3886.649,0.969,10.346,887.662,0.000,0.000,0,0,0,,0
+burst,bales_ect,stagger=3ms,false,1,4,32,506.810,509.060,887.662,893.872,559.289,893.962,3886.649,0.969,10.346,893.872,0.000,0.000,0,0,0,,0
+burst,bales_ect_coalesced,stagger=3ms,true,1,4,32,143.209,142.459,170.359,172.839,143.459,172.859,509.373,0.667,10.346,172.839,0.000,0.000,31,29,29,,0

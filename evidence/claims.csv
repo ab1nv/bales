@@ -1,0 +1,24 @@
+claim_id,text,kind,source_or_run,commit,script,status,verified_on
+C001,"Tenant-salted chained hashing is deterministic, prefix-stable, and separates tenants",own-run,go test ./internal/prefix,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,internal/prefix/hash_test.go,✅,2026-11-16
+C002,The cost fit recovers synthetic coefficients within 5 percent and the identity saving equals hit value when attention coefficients match,own-run,go test ./internal/cost,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,internal/cost/model_test.go,✅,2026-11-16
+C003,The Proposition 3 wait bound holds across 200 randomized non-preemptive EDF trials,own-run,go test ./internal/queue,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,internal/queue/queue_test.go,✅,2026-11-16
+C004,The gateway coalesces a same-prompt follower and releases it on the leader first token,own-run,go test ./internal/gateway,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,internal/gateway/server_test.go,✅,2026-11-16
+C005,"Simulated 32-request burst, 2048-token prompt, 4 replicas: coalescing lowers request P50 TTFT from 504.6 ms to 142.5 ms",own-run,evidence/runs/burst_summary.csv,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,cmd/simulate,✅,2026-11-16
+C006,The same burst: coalescing lowers simulated prefill work from 3886.6 ms to 509.4 ms and duplicate-prefill ratio from 0.969 to 0.667,own-run,evidence/runs/burst_summary.csv,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,cmd/simulate,✅,2026-11-16
+C007,"Long-context simulation, rate 6: ECT P99 TTFT is 1209 ms versus 3036 ms for least-token routing",own-run,evidence/runs/longctx_summary.csv,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,cmd/simulate,✅,2026-11-16
+C008,Queue simulation at rate 8: strict priority lowers stream P99 TTFT from 5025 ms to 562 ms while batch P99 wait rises from 4649 ms to 5109 ms,own-run,evidence/runs/queue_summary.csv,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,cmd/simulate,✅,2026-11-16
+C009,Scheduling decision core costs 15.9 ns per decision on the build host,own-run,evidence/bench.txt,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,go test -bench,✅,2026-11-16
+C010,"Chained block hashing runs at 1.08 GB/s, about 0.95 microseconds per KB of prompt",own-run,evidence/bench.txt,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,go test -bench,✅,2026-11-16
+C011,Full Go test suite and race detector pass,own-run,go test ./... and go test -race ./...,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,Makefile,✅,2026-11-16
+C012,No GPU experiments were run; all cluster results are simulated and labeled,own-run,evidence/manifest.json,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,cmd/simulate,✅,2026-11-16
+S001,"Mooncake: A KVCache-centric Disaggregated Architecture for LLM Serving, ACM Transactions on Storage, DOI 10.1145/3773772",primary-source,https://doi.org/10.1145/3773772,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,✅,2026-11-16
+S002,"DOPD, IEEE Transactions on Services Computing 2026, DOI 10.1109/TSC.2026.3670011",primary-source,https://doi.org/10.1109/TSC.2026.3670011,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,✅,2026-11-16
+S003,"SLAI, Proceedings of the ACM on Measurement and Analysis of Computing Systems 9(3), DOI 10.1145/3771574",primary-source,https://doi.org/10.1145/3771574,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,✅,2026-11-16
+S004,"PEEK: pending-queue prefix scheduling, arXiv 2607.02525",primary-source,https://arxiv.org/abs/2607.02525,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,✅,2026-11-16
+S005,"CacheRoute: prefix-affinity routing with planned rebalancing, arXiv 2608.19677",primary-source,https://arxiv.org/abs/2608.19677,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,✅,2026-11-16
+S006,"DualMap: two-hash prefix-aware routing, ICLR 2026, arXiv 2602.06502",primary-source,https://arxiv.org/abs/2602.06502,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,✅,2026-11-16
+S007,"Preble: efficient distributed prompt scheduling, ICLR 2025",primary-source,ICLR 2025 proceedings (URL not recorded),32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,❓,2026-11-16
+S008,llm-d inference scheduler uses speculative prefix indexing for same-prefix requests,primary-source,https://github.com/llm-d/llm-d-inference-scheduler,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,⚠️,2026-11-16
+S009,NVIDIA Dynamo KV router supports approximate mode without KV events,primary-source,https://github.com/ai-dynamo/dynamo,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,⚠️,2026-11-16
+S010,SGLang issue 48963 documents duplicate in-flight prefill for same-prefix requests,primary-source,https://github.com/sgl-project/sglang/issues/48963,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,⚠️,2026-11-16
+S011,"Cloudflare October 19, 2026 post describes an application-layer leader/follower wait that trades latency for cost",primary-source,Cloudflare blog post dated 2026-10-19 (URL to verify),32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,❓,2026-11-16

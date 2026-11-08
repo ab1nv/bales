@@ -1,0 +1,37 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/ab1nv/bales/internal/coalesce
+cpu: Apple M5
+BenchmarkDecide-10    	72490442	        15.89 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/ab1nv/bales/internal/coalesce	1.600s
+PASS
+ok  	github.com/ab1nv/bales/internal/cost	0.349s
+PASS
+ok  	github.com/ab1nv/bales/internal/engine	0.361s
+PASS
+ok  	github.com/ab1nv/bales/internal/gateway	0.390s
+goos: darwin
+goarch: arm64
+pkg: github.com/ab1nv/bales/internal/prefix
+cpu: Apple M5
+BenchmarkChain64KB-10    	   18566	     60854 ns/op	1076.95 MB/s	     256 B/op	       1 allocs/op
+PASS
+ok  	github.com/ab1nv/bales/internal/prefix	1.479s
+goos: darwin
+goarch: arm64
+pkg: github.com/ab1nv/bales/internal/queue
+cpu: Apple M5
+BenchmarkPushPop-10    	31032174	        37.74 ns/op	     112 B/op	       1 allocs/op
+PASS
+ok  	github.com/ab1nv/bales/internal/queue	1.539s
+goos: darwin
+goarch: arm64
+pkg: github.com/ab1nv/bales/internal/sched
+cpu: Apple M5
+BenchmarkECTPick-10    	34365156	        33.92 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/ab1nv/bales/internal/sched	1.512s
+PASS
+ok  	github.com/ab1nv/bales/internal/sim	0.111s
+?   	github.com/ab1nv/bales/internal/telemetry	[no test files]
