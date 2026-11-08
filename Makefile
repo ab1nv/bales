@@ -2,7 +2,7 @@ SHELL := /bin/zsh
 BIN := bin
 GOFLAGS := -trimpath
 
-.PHONY: build test race bench vet sim demo pdf clean
+.PHONY: build test race bench vet sim demo pdf clean claims ci
 
 build:
 	@mkdir -p $(BIN)
@@ -22,6 +22,11 @@ bench:
 
 vet:
 	go vet ./...
+
+claims:
+	python3 scripts/check_claims.py
+
+ci: vet test claims
 
 sim: build
 	$(BIN)/bales-simulate -exp all -out evidence/runs
