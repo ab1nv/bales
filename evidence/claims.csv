@@ -22,3 +22,6 @@ S008,llm-d inference scheduler uses speculative prefix indexing for same-prefix 
 S009,NVIDIA Dynamo KV router supports approximate mode without KV events,primary-source,https://github.com/ai-dynamo/dynamo,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,⚠️,2026-11-16
 S010,SGLang issue 48963 documents duplicate in-flight prefill for same-prefix requests,primary-source,https://github.com/sgl-project/sglang/issues/48963,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,⚠️,2026-11-16
 S011,"Cloudflare October 19, 2026 post describes an application-layer leader/follower wait that trades latency for cost",primary-source,Cloudflare blog post dated 2026-10-19 (URL to verify),32409b55ce30b13f3ddd43dac6d342c19e0cdde5,-,❓,2026-11-16
+C013,"The burst simulation shows follower P50 TTFT of 143.5 ms with coalescing versus 559.3 ms for round robin, and prefill and P50 reductions of 86.9 and 71.8 percent",own-run,evidence/runs/burst_summary.csv,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,cmd/simulate,✅,2026-11-16
+C014,ECT replica selection costs 33.9 ns per pick with 8 replicas,own-run,evidence/bench.txt,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,go test -bench,✅,2026-11-16
+C015,The admission queue push and pop pair costs 37.7 ns,own-run,evidence/bench.txt,32409b55ce30b13f3ddd43dac6d342c19e0cdde5,go test -bench,✅,2026-11-16
