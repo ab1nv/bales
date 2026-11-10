@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 860" width="640" height="860" role="img" aria-label="Request flow">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4A5A66"/>
+    </marker>
+    <style>
+      .box { fill:#FFFFFF; stroke:#B9C4CC; stroke-width:1.2; }
+      .gate { fill:#E7F5F2; stroke:#2A9D8F; stroke-width:1.4; }
+      .dec { fill:#FFF6DE; stroke:#D8A93A; stroke-width:1.4; }
+      .t { font-family: Inter, Helvetica, Arial, sans-serif; font-size:12px; fill:#16232E; }
+      .s { font-family: Inter, Helvetica, Arial, sans-serif; font-size:10px; fill:#5D6B76; }
+      .f { stroke:#4A5A66; stroke-width:1.3; fill:none; marker-end:url(#a); }
+      .fl { stroke:#2A9D8F; stroke-width:1.2; fill:none; stroke-dasharray:4 3; marker-end:url(#a); }
+    </style>
+  </defs>
+  <rect width="640" height="860" fill="#FBFCFD"/>
+
+  <rect x="200" y="24" width="240" height="46" rx="8" class="box"/>
+  <text x="320" y="44" text-anchor="middle" class="t">Client request</text>
+  <text x="320" y="60" text-anchor="middle" class="s">OpenAI JSON, optional SSE</text>
+
+  <rect x="200" y="100" width="240" height="52" rx="8" class="gate"/>
+  <text x="320" y="121" text-anchor="middle" class="t">Parse and hash prompt</text>
+  <text x="320" y="138" text-anchor="middle" class="s">tenant salt, chained blocks, token estimate</text>
+
+  <rect x="200" y="182" width="240" height="46" rx="8" class="gate"/>
+  <text x="320" y="202" text-anchor="middle" class="t">Admission</text>
+  <text x="320" y="218" text-anchor="middle" class="s">queued work below Q max</text>
+
+  <rect x="200" y="258" width="240" height="46" rx="8" class="gate"/>
+  <text x="320" y="278" text-anchor="middle" class="t">Virtual-deadline queue</text>
+  <text x="320" y="294" text-anchor="middle" class="s">static key, earliest deadline first</text>
+
+  <polygon points="320,336 450,396 320,456 190,396" class="dec"/>
+  <text x="320" y="391" text-anchor="middle" class="t">Leader in flight?</text>
+  <text x="320" y="407" text-anchor="middle" class="s">same chain hash</text>
+
+  <polygon points="330,492 470,556 330,620 190,556" class="dec"/>
+  <text x="330" y="549" text-anchor="middle" class="t">Hold cheaper and safe?</text>
+  <text x="330" y="565" text-anchor="middle" class="s">saving &gt; tau + wait gap</text>
+
+  <rect x="232" y="660" width="176" height="50" rx="8" class="gate"/>
+  <text x="320" y="681" text-anchor="middle" class="t">Dispatch to replica</text>
+  <text x="320" y="697" text-anchor="middle" class="s">ECT, KV, ITL, affinity gate</text>
+
+  <rect x="232" y="738" width="176" height="46" rx="8" class="box"/>
+  <text x="320" y="758" text-anchor="middle" class="t">Stream and measure</text>
+  <text x="320" y="774" text-anchor="middle" class="s">TTFT, usage, cached tokens</text>
+
+  <rect x="232" y="808" width="176" height="40" rx="8" class="box"/>
+  <text x="320" y="833" text-anchor="middle" class="s">Telemetry, audit, calibrate</text>
+
+  <path d="M320 70 L320 100" class="f"/>
+  <path d="M320 152 L320 182" class="f"/>
+  <path d="M320 228 L320 258" class="f"/>
+  <path d="M320 304 L320 336" class="f"/>
+
+  <path d="M190 396 L96 396 L96 685 L232 685" class="f"/>
+  <text x="108" y="386" class="s">no: dispatch</text>
+
+  <path d="M320 456 L320 492" class="f"/>
+  <text x="330" y="478" class="s">yes</text>
+
+  <path d="M190 556 L130 556 L130 685" class="f"/>
+  <text x="140" y="548" class="s">no: spill</text>
+
+  <path d="M330 620 L330 660" class="f"/>
+  <text x="340" y="644" class="s">yes: hold</text>
+
+  <path d="M320 710 L320 738" class="f"/>
+  <path d="M320 784 L320 808" class="f"/>
+
+  <path d="M470 556 L548 556 L548 685 L408 685" class="fl"/>
+  <text x="486" y="546" class="s">leader first token</text>
+  <text x="500" y="674" class="s">release waiters</text>
+
+  <rect x="462" y="300" width="150" height="80" rx="8" class="box"/>
+  <text x="537" y="322" text-anchor="middle" class="t">Registry</text>
+  <text x="537" y="340" text-anchor="middle" class="s">chain to leader</text>
+  <text x="537" y="356" text-anchor="middle" class="s">est done, done</text>
+  <path d="M450 396 L462 396" class="f"/>
+</svg>

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" width="920" height="400" role="img" aria-label="Bales gateway architecture">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4A5A66"/>
+    </marker>
+    <style>
+      .box { fill: #FFFFFF; stroke: #C9D2D8; stroke-width: 1.2; }
+      .bale { fill: #E7F5F2; stroke: #2A9D8F; stroke-width: 1.4; }
+      .rep { fill: #FFF6DE; stroke: #D8A93A; stroke-width: 1.4; }
+      .lbl { font-family: Inter, Helvetica, Arial, sans-serif; font-size: 13px; fill: #16232E; }
+      .sub { font-family: Inter, Helvetica, Arial, sans-serif; font-size: 11px; fill: #5D6B76; }
+      .head { font-family: Inter, Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 600; fill: #16232E; }
+      .flow { stroke: #4A5A66; stroke-width: 1.4; fill: none; marker-end: url(#arrow); }
+      .feedback { stroke: #2A9D8F; stroke-width: 1.3; stroke-dasharray: 5 4; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="920" height="400" fill="#FBFCFD"/>
+
+  <rect x="24" y="150" width="132" height="76" rx="10" class="box"/>
+  <text x="90" y="180" text-anchor="middle" class="head">Clients</text>
+  <text x="90" y="200" text-anchor="middle" class="sub">stream and batch</text>
+
+  <rect x="196" y="34" width="430" height="288" rx="14" fill="#FFFFFF" stroke="#C9D2D8" stroke-width="1.2"/>
+  <text x="216" y="58" class="head">Bales gateway</text>
+
+  <rect x="216" y="72" width="390" height="46" rx="8" class="bale"/>
+  <text x="230" y="92" class="lbl">Admission</text>
+  <text x="230" y="108" class="sub">request cap, 429 on overload</text>
+
+  <rect x="216" y="132" width="390" height="46" rx="8" class="bale"/>
+  <text x="230" y="152" class="lbl">Virtual-deadline queue</text>
+  <text x="230" y="168" class="sub">stream D 300 ms, batch D 5 s, static key</text>
+
+  <rect x="216" y="192" width="390" height="46" rx="8" class="bale"/>
+  <text x="230" y="212" class="lbl">Prefix coalescer</text>
+  <text x="230" y="228" class="sub">hold or spill, bounded deadline, leader registry</text>
+
+  <rect x="216" y="252" width="390" height="46" rx="8" class="bale"/>
+  <text x="230" y="272" class="lbl">ECT router and affinity gate</text>
+  <text x="230" y="288" class="sub">cost model, KV and ITL constraints</text>
+
+  <rect x="668" y="34" width="224" height="288" rx="14" fill="#FFFDF7" stroke="#D8A93A" stroke-width="1.2"/>
+  <text x="688" y="58" class="head">Inference replicas</text>
+  <rect x="688" y="78" width="184" height="58" rx="8" class="rep"/>
+  <text x="780" y="102" text-anchor="middle" class="lbl">Replica 0</text>
+  <text x="780" y="120" text-anchor="middle" class="sub">vLLM, SGLang, mock</text>
+  <rect x="688" y="152" width="184" height="58" rx="8" class="rep"/>
+  <text x="780" y="176" text-anchor="middle" class="lbl">Replica 1</text>
+  <text x="780" y="194" text-anchor="middle" class="sub">prefix cache</text>
+  <rect x="688" y="226" width="184" height="58" rx="8" class="rep"/>
+  <text x="780" y="250" text-anchor="middle" class="lbl">Replica N</text>
+  <text x="780" y="268" text-anchor="middle" class="sub">/metrics and SSE</text>
+
+  <path d="M156 188 L196 188" class="flow"/>
+  <path d="M411 118 L411 132" class="flow"/>
+  <path d="M411 178 L411 192" class="flow"/>
+  <path d="M411 238 L411 252" class="flow"/>
+  <path d="M606 275 L668 275" class="flow"/>
+  <path d="M780 322 L780 356 L411 356 L411 322" class="feedback"/>
+  <text x="500" y="376" text-anchor="middle" class="sub">TTFT, ITL, cached_tokens, /metrics to calibrator and directory auditor</text>
+
+  <text x="24" y="270" class="sub">OpenAI-compatible</text>
+  <text x="24" y="286" class="sub">HTTP and SSE</text>
+</svg>

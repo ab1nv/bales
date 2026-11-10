@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bales Project Report</title>
+<style>
+  @page { size: A4; margin: 17mm 16mm 18mm 16mm; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0; color: #1B232B; background: #fff;
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 10.2pt; line-height: 1.42;
+  }
+  h1, h2, h3, h4 { font-family: Inter, Helvetica, Arial, sans-serif; color: #14252E; }
+  h1 { font-size: 19pt; margin: 0 0 4mm 0; }
+  h2 { font-size: 13.5pt; margin: 5mm 0 2mm 0; border-bottom: 1.2px solid #2A9D8F; padding-bottom: 1.5mm; }
+  h3 { font-size: 11pt; margin: 4mm 0 1.5mm 0; }
+  h2, h3, h4 { break-after: avoid; }
+  p { margin: 0 0 2.6mm 0; text-align: justify; hyphens: auto; }
+  ul, ol { margin: 0 0 2.6mm 0; padding-left: 6mm; }
+  li { margin-bottom: 1.2mm; }
+  a { color: #1F7A70; text-decoration: none; }
+  .section { page-break-before: always; }
+  .cover { page-break-after: always; height: 250mm; position: relative; }
+  .cover .logo { width: 34mm; display: block; margin: 12mm auto 5mm auto; }
+  .cover h1 { font-size: 34pt; text-align: center; margin: 0; letter-spacing: 1px; }
+  .cover .sub { font-family: Inter, Helvetica, Arial, sans-serif; font-size: 12pt; color: #4E5D68; text-align: center; margin: 3mm 26mm 0 26mm; line-height: 1.35; }
+  .cover .meta { position: absolute; bottom: 18mm; left: 0; right: 0; text-align: center; font-family: Inter, Helvetica, Arial, sans-serif; font-size: 9.5pt; color: #5D6B76; }
+  .cover .tag { display: block; width: 130mm; margin: 12mm auto 0 auto; padding: 4mm 5mm; border: 1px solid #C9D2D8; border-left: 3px solid #2A9D8F; background: #F7FBFA; font-size: 9pt; text-align: left; }
+  .tag b { font-family: Inter, Helvetica, Arial, sans-serif; color: #14252E; }
+  .abstract { margin-top: 3mm; font-size: 9.6pt; background: #F7F9FA; border-left: 3px solid #2A9D8F; padding: 3mm 4mm; }
+  .lede { font-size: 10.8pt; color: #2B3A44; }
+  .meta-line { font-family: Inter, Helvetica, Arial, sans-serif; font-size: 8.5pt; color: #66737E; margin-bottom: 3mm; }
+  figure { margin: 3mm 0 4mm 0; page-break-inside: avoid; text-align: center; }
+  figure img { max-width: 100%; }
+  figcaption { font-family: Inter, Helvetica, Arial, sans-serif; font-size: 8pt; color: #5D6B76; margin-top: 1.5mm; text-align: left; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm 0; font-family: Inter, Helvetica, Arial, sans-serif; font-size: 8pt; line-height: 1.3; page-break-inside: auto; }
+  th { background: #E7F5F2; color: #14252E; text-align: left; padding: 1.6mm 1.8mm; border-bottom: 1px solid #9FC9C2; font-weight: 600; }
+  td { padding: 1.5mm 1.8mm; border-bottom: 0.6px solid #D9E1E5; vertical-align: top; }
+  tr { page-break-inside: avoid; }
+  .small { font-size: 9pt; }
+  .muted { color: #5D6B76; }
+  .pill { display: inline-block; padding: 0.4mm 2mm; border-radius: 2mm; font-family: Inter, Helvetica, Arial, sans-serif; font-size: 7.6pt; background: #E7F5F2; color: #1F6E64; }
+  .warn { background: #FFF3D6; color: #7A5200; }
+  pre {
+    font-family: "SFMono-Regular", Menlo, Consolas, monospace; font-size: 7.8pt; line-height: 1.35;
+    background: #F6F8FA; border-left: 2.5px solid #2A9D8F; padding: 2.5mm 3mm; margin: 2mm 0 3mm 0;
+    white-space: pre-wrap; page-break-inside: avoid;
+  }
+  .algo { border: 1px solid #D9E1E5; border-left: 2.5px solid #264653; }
+  .two { display: flex; gap: 5mm; }
+  .two > div { flex: 1; }
+  .note { font-size: 8.6pt; color: #4E5D68; border-top: 0.6px solid #D9E1E5; padding-top: 2mm; margin-top: 3mm; }
+  .refs { font-size: 8.6pt; }
+  .refs li { margin-bottom: 1.6mm; }
+  .footnote { font-size: 8pt; color: #5D6B76; }
+  .no-break { page-break-inside: avoid; }
+  .screenshot { border: 1px solid #D9E1E5; border-radius: 2mm; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <img class="logo" src="../assets/logo.png" alt="Bales logo">
+  <h1>Bales</h1>
+  <div class="sub">Cost-Model-Driven Prefix Coalescing and Bounded-Wait Scheduling at the LLM Gateway</div>
+  <div class="tag">
+    <b>Project classification.</b> Research based: scheduling and cost-model design, with a pre-registered evaluation plan. Application based: a working Go gateway, simulator, telemetry contract, and reproducible evidence ledger. Hardware aware: the target deployment is vLLM on NVIDIA T4, but this prototype reports CPU-host microbenchmarks and simulated cluster results. No GPU experiments have been run yet.
+  </div>
+  <div class="meta">
+    Abhinav Singh<br>
+    Prototype v0.2.0 · November 2026<br>
+    Repository: github.com/ab1nv/bales · Branch: proto
+  </div>
+</div>
+
+<!-- INTRODUCTION -->
+<div class="section">
+<h1>1. Introduction</h1>
+
+<p class="lede">Bales is a gateway for mixed large language model traffic. It routes streaming chat and longer batch jobs across a pool of OpenAI-compatible inference replicas, values cached prompt prefixes with a calibrated cost model, and chooses whether to wait for an in-flight prefill or send a duplicate request to another GPU.</p>
+
+<h2>1.1 What the project is</h2>
+<p>A modern LLM deployment rarely serves one kind of request. Interactive chat needs a low time to first token (TTFT) and a stable inter-token latency (ITL). Agent workflows send several requests that share a long system prompt or a retrieved document. Batch jobs tolerate delay but consume the same GPU capacity. Prefix caching lets a replica reuse the KV state of a shared prefix, but the benefit depends on where the request lands, whether the prefix is still resident, and whether another request is already computing the same prefix.</p>
+<p>Bales addresses those decisions in one place. The gateway hashes prompts into tenant-salted blocks, keeps a per-replica belief about cache contents, estimates prefill time with a fitted quadratic cost function, and routes by earliest completion time. A coalescer tracks in-flight leaders by chain hash. A follower with the same prompt can wait for the leader's first token and then use the warm cache, or it can spill to a replica with spare capacity. A virtual-deadline queue separates stream and batch classes without letting batch work starve.</p>
+
+<h2>1.2 Why it matters</h2>
+<p>Prefix caching is effective only when the same prefix is requested repeatedly and the request reaches the replica that holds it. In a cold burst, several copies of one prompt can arrive before the first prefill finishes. A router that records a cache entry when it dispatches the first request will believe the prefix is ready and send the followers to the same replica. The engine then admits those followers into the same prefill batch or queues them behind the leader, so the cluster computes the same prefix more than once. The waste is visible in prefill seconds and in follower TTFT.</p>
+<p>The second problem is valuation. A cache hit is worth the prefill work it removes, and that work grows faster than linearly with prefix length because attention pairs grow with the product of query and context length. A router that scores a hit as a constant, or as a linear function of cached tokens, will under-value a long document and over-value a short system prompt. The prototype therefore fits the cost function to measured timings and uses the exact saving in its hold decision.</p>
+<p>The third problem is waiting. A blanket leader/follower rule can make a request slower when an idle GPU is available. The prototype compares hold and spill in milliseconds and caps the hold with the request slack and a deployment-level maximum. The queue uses static virtual deadlines and admission control so a bounded wait can be stated and tested.</p>
+
+<h2>1.3 How the prototype works</h2>
+<p>The request path has five stages. The gateway parses the OpenAI chat body, estimates prompt tokens from bytes, and builds a chained block hash with a tenant salt. Admission caps queued estimated work. The request receives a static virtual deadline based on class and estimated cost. A single dispatcher pops the earliest deadline and consults the leader registry. The coalescer either holds, spills, or dispatches. The ECT router scores each healthy replica in milliseconds using queue wait, calibrated prefill cost, KV capacity, and an ITL guard. The selected engine is proxied with server-sent events. Telemetry records TTFT, total time, engine-reported cached tokens, policy reason, and hold outcome.</p>
+<p>The implementation is Go 1.27 with no external modules. The repository contains the gateway, a mock OpenAI-compatible worker, a discrete-event simulator, a cost-calibration CLI, unit and race tests, a claims ledger, and scripts that regenerate every figure. The current report evaluates the prototype with local microbenchmarks and a trace-driven simulator. The simulated cluster has four replicas, a single prefill slot per replica, and no cross-request decode batching. That model is deliberately simple and is used for relative comparisons only.</p>
+
+<h2>1.4 Project type</h2>
+<table>
+<tr><th style="width:27%">Dimension</th><th>How this project fits</th></tr>
+<tr><td><b>Research based</b></td><td>Formulates hold-or-spill as a cost comparison, states a wait bound for the deadline queue, and pre-registers hypotheses with success and kill criteria. The prototype tests the mechanisms that can be tested without a GPU and records the rest as open.</td></tr>
+<tr><td><b>Application based</b></td><td>Delivers a running gateway, a mock inference worker, a simulator, a 24-column telemetry contract, a claims ledger, CI checks, a report, a presentation, and a study guide.</td></tr>
+<tr><td><b>Hardware based</b></td><td>Targets vLLM on T4 through an OpenAI-compatible adapter. The cost model, KV limits, and ITL guard are hardware parameters. GPU calibration and fidelity runs remain future work.</td></tr>
+</table>
+
+<h2>1.5 Scope and contributions</h2>
+<ul>
+<li>A gateway-level, engine-agnostic coalescer with a load-aware hold-or-spill rule and a bounded hold deadline.</li>
+<li>A calibrated prefill cost model and an exact cache-saving expression used by routing and coalescing.</li>
+<li>A static virtual-deadline queue with admission control and a fuzz-tested wait bound.</li>
+<li>An ECT router with KV and ITL constraints, plus an affinity gate that chooses spread, pin, or replicate.</li>
+<li>A trace-driven simulator, a claims ledger, reproducible runs, and a report package.</li>
+</ul>
+<p class="note">The prototype does not claim a first quadratic cost model, a first prefix-aware router, or a first leader/follower mechanism. It combines published ideas in an open gateway and measures the combination. Chapter 2 states what each prior system already does.</p>
+</div>
+
+<!-- LITERATURE -->
+<div class="section">
+<h1>2. Literature Survey</h1>
+<p>Fifteen recent systems, papers, and software projects inform the design. The strengths and limits below describe what each item contributes and what it leaves open for a gateway-level prototype. Quantitative claims are taken only from the cited primary source where the source was checked; the evidence ledger records the verification status.</p>
+
+<h3>2.1 Archival systems</h3>
+<p><b>[1] Mooncake (ACM Transactions on Storage, 2025).</b> A KVCache-centric disaggregated serving architecture with a global scheduler, prefix-aware prefill placement, and a separate KV cache pool. <i>Strengths:</i> production-scale evidence that cache placement dominates tail latency; a clear separation of prefill and decode resources. <i>Limits:</i> depends on a dedicated cache fabric and a custom deployment; the scheduler is not packaged as an engine-agnostic gateway primitive.</p>
+<p><b>[2] DOPD (IEEE Transactions on Services Computing, 2026).</b> Dependency-aware online scheduling for LLM serving with reported goodput and tail-latency gains over vLLM and DistServe. <i>Strengths:</i> strong SLO results and a scheduling formulation that accounts for request dependencies. <i>Limits:</i> evaluated inside a particular serving stack; duplicate in-flight prefixes and cross-replica coalescing are not the focus.</p>
+<p><b>[3] SLAI (Proceedings of the ACM on Measurement and Analysis of Computing Systems, 2025).</b> Optimal scheduling algorithms for LLM inference with theory and practice. <i>Strengths:</i> provides a theoretical basis for deadline and fairness arguments. <i>Limits:</i> evaluated on a single GPU; the multi-replica prefix-affinity case is outside its model.</p>
+<p><b>[4] BrownoutServe (IEEE Transactions on Computers, 2026).</b> Brownout-style overload control for LLM serving. <i>Strengths:</i> treats overload as a first-class regime and measures FCFS violations. <i>Limits:</i> not prefix-aware, and its control loop assumes a single serving instance.</p>
+<p><b>[5] FairCache (IEEE Transactions on Parallel and Distributed Systems, 2026).</b> Studies cache-induced unfairness in multi-tenant LLM serving. <i>Strengths:</i> names the tenant-level externality that prefix caching creates. <i>Limits:</i> the paper contributes fairness analysis and does not implement gateway coalescing.</p>
+<p><b>[6] Early Bird (IEEE Transactions on Information Forensics and Security, 2025).</b> Timing side channels in LLM serving. <i>Strengths:</i> shows that cache and batching state can leak through latency. <i>Limits:</i> an attack study; it does not propose a tenant-salted gateway design.</p>
+
+<h3>2.2 Prefix-aware scheduling</h3>
+<p><b>[7] PEEK (arXiv, 2026).</b> A pending-queue radix tree that admits cluster pioneers first so siblings inherit the cached prefix, with multi-lane stride scheduling to bound starvation. <i>Strengths:</i> directly attacks duplicate prefill inside the engine and provides a starvation argument. <i>Limits:</i> engine-side and single-replica; the gateway still has to decide where a group should run and when to spill.</p>
+<p><b>[8] CacheRoute (arXiv, 2026).</b> Periodic planned prefix affinity with rebalancing, evaluated at 60 H100 GPUs, and an honest report of workloads where affinity erases the gain. <i>Strengths:</i> large-scale evidence and a shadow-replay gating recommendation. <i>Limits:</i> routing only; no in-flight coalescing and no bounded hold rule.</p>
+<p><b>[9] DualMap (ICLR 2026).</b> Two-hash power-of-two-choices routing with an SLO-aware switch to load-aware placement, hotspot rebalancing, and an open simulator with several baseline policies. <i>Strengths:</i> a strong, reproducible router baseline. <i>Limits:</i> cache belief is approximate and requests with the same prompt can still duplicate prefill.</p>
+<p><b>[10] Preble (ICLR 2025).</b> Exploit and explore prefix scheduling across replicas. <i>Strengths:</i> simple and effective for prefix-heavy workloads. <i>Limits:</i> no explicit in-flight wait or deadline bound; fairness across classes is not a design goal.</p>
+
+<h3>2.3 Gateway and engine software</h3>
+<p><b>[11] llm-d inference scheduler (2026).</b> A Kubernetes-native gateway with a precise prefix producer, speculative indexing, and scorers for active requests, no-hit LRU, and KV utilization. <i>Strengths:</i> production-grade prefix-aware routing; speculative indexing removes the directory wait after routing. <i>Limits:</i> same-prefix requests are still admitted independently; coalescing is left to the engine or the application, and the scorer weights need tuning per deployment.</p>
+<p><b>[12] NVIDIA Dynamo (2026).</b> A distributed inference stack with a KV router, KV events, and an approximate mode that infers cache state from routing history. <i>Strengths:</i> scales to large clusters and exposes cache state as a first-class signal. <i>Limits:</i> approximate mode can route a follower to a prefix that is still being computed; engine-side duplicate admission remains possible.</p>
+<p><b>[13] SGLang issue 48963 (2026).</b> Documents that in-batch prefix caching only deprioritises duplicate prompts; duplicates still join the same prefill batch when the token budget allows. Holding same-prompt requests outside the queue raised the hit rate sharply in the reported experiment. <i>Strengths:</i> direct evidence of the open problem and an ad hoc workaround. <i>Limits:</i> a single-engine fix that does not provide a multi-replica gateway policy.</p>
+<p><b>[14] DeepSeek DeepInfer deployment notes (2026).</b> A released engine with a fitted quadratic cost model for prefill quota, a decode load balancer on request count and total KV length, and a hash-chain entrypoint over 128-token blocks. <i>Strengths:</i> validates the cost-model direction at production scale. <i>Limits:</i> a Blackwell-targeted engine with one model family, a shared 3FS KV store, and no prefix-affinity routing; the ideas are not packaged as an open gateway.</p>
+
+<h3>2.4 Application-layer precedent</h3>
+<p><b>[15] Cloudflare AI code reviewer postmortem (October 19, 2026).</b> An application-level leader/follower wait: sibling calls wait for the first request's response to start streaming, which slows the followers slightly and saves about nine cents per review. <i>Strengths:</i> evidence that the primitive is wanted and that its value can be measured in money. <i>Limits:</i> application-specific, no deadline policy, and the headline latency gains came from several changes at once; the wait was one contributor.</p>
+
+<p class="note">Additional works inform the comparative table. Cannikin studies SLO-aware multi-LoRA serving [16], Planck studies fine-grained pipeline constraints [17], and the vLLM PagedAttention design [18] supplies the paged KV cache that makes prefix reuse practical. They are cited where relevant but are not counted among the fifteen primary comparisons.</p>
+</div>
+
+<!-- COMPARATIVE -->
+<div class="section">
+<h1>3. Comparative Study</h1>
+<p>The table compares the closest systems on the dimensions that matter for the Bales prototype. “Partial” means the property exists in a restricted form or is delegated to another component.</p>
+<table>
+<tr>
+  <th style="width:17%">System</th>
+  <th>Prefix-aware routing</th>
+  <th>Calibrated hit value</th>
+  <th>In-flight coalescing</th>
+  <th>Bounded waiting / fairness</th>
+  <th>Multi-replica</th>
+  <th>Engine-agnostic gateway</th>
+</tr>
+<tr><td><b>Mooncake</b> [1]</td><td>Yes</td><td>Partial</td><td>No</td><td>Partial</td><td>Yes</td><td>No</td></tr>
+<tr><td><b>DOPD</b> [2]</td><td>Partial</td><td>No</td><td>No</td><td>Yes</td><td>Yes</td><td>No</td></tr>
+<tr><td><b>PEEK</b> [7]</td><td>Yes</td><td>No</td><td>Yes (engine)</td><td>Yes</td><td>No</td><td>No</td></tr>
+<tr><td><b>CacheRoute</b> [8]</td><td>Yes</td><td>Partial</td><td>No</td><td>No</td><td>Yes</td><td>Partial</td></tr>
+<tr><td><b>DualMap</b> [9]</td><td>Yes</td><td>No</td><td>No</td><td>SLO switch</td><td>Yes</td><td>Simulator</td></tr>
+<tr><td><b>Preble</b> [10]</td><td>Yes</td><td>No</td><td>No</td><td>No</td><td>Yes</td><td>No</td></tr>
+<tr><td><b>llm-d</b> [11]</td><td>Yes</td><td>Partial</td><td>No</td><td>Partial</td><td>Yes</td><td>Partial</td></tr>
+<tr><td><b>Dynamo</b> [12]</td><td>Yes</td><td>Partial</td><td>No</td><td>Partial</td><td>Yes</td><td>Partial</td></tr>
+<tr><td><b>Bales proto</b></td><td>Yes</td><td>Yes (fitted)</td><td>Yes (gateway)</td><td>Yes (fuzz-tested)</td><td>Yes</td><td>OpenAI adapter</td></tr>
+</table>
+<p>The prototype sits between these systems. Prefix-aware routing is well covered by prior systems. A calibrated cache value is present in DeepInfer [14] and partially in production routers. Gateway-level in-flight coalescing with an explicit hold deadline is the least covered cell. PEEK solves a related problem inside one engine; Bales moves the decision above the engine so it can span replicas and engine types.</p>
+<p>Two caveats follow from the comparison. First, the Bales baseline ports are simplified; a fair evaluation needs the same tuning budget for llm-d, Dynamo, DualMap, Preble, and CacheRoute. Second, the gateway can only coalesce what it can identify. The prototype matches exact prompt chains. Nested prefix groups with different suffixes require a trie of in-flight chains, which is designed but not implemented.</p>
+</div>
+
+<!-- PROBLEM -->
+<div class="section">
+<h1>4. Problem Statement</h1>
+<p>LLM serving clusters duplicate prefill work when several requests that share a prompt are admitted while the first copy is still being computed. Engine-level prefix caching removes duplicates only after the KV blocks exist, and current gateway routers either ignore the in-flight state or record a speculative cache entry that makes followers believe the prefix is ready. The same routers value a cache hit without a calibrated model of prefill cost, so they misprice long prefixes against queue delay and choose the wrong replica. Mixed stream and batch traffic adds a second failure: fixed priorities protect interactive requests but starve batch work, while first-come-first-served lets long batch prefills block short streams. The prototype asks whether one gateway can solve the three problems together: coalesce duplicate in-flight prompts without increasing follower latency when an idle replica exists, price cache hits with a fitted cost model, and bound waiting for batch work under admission control while preserving stream latency.</p>
+
+<h2>5. Objectives</h2>
+<ol>
+<li>Build an engine-agnostic gateway that detects same-prompt requests in flight, holds a follower only when the expected saving exceeds the wait, and spills otherwise with a bounded hold deadline.</li>
+<li>Calibrate a prefill cost model from idle-replica measurements and use the exact cache saving in routing, coalescing, and the affinity gate.</li>
+<li>Implement a static virtual-deadline admission queue for stream and batch classes and test its wait bound with randomized traces.</li>
+<li>Provide a trace-driven simulator, a claims ledger, and a reproducible prototype package that separates measured facts from open questions.</li>
+</ol>
+</div>
+
+<!-- PLANNING -->
+<div class="section">
+<h1>6. Planning of Work and Proposed Solution</h1>
+<p>The work was planned as five phases, with a stop-or-pivot decision after the first. The prototype completed the implementation and simulation phases. The GPU calibration and fidelity phases are specified but not executed.</p>
+
+<h2>6.1 Method</h2>
+<table>
+<tr><th style="width:16%">Phase</th><th>Work</th><th style="width:22%">Exit condition</th></tr>
+<tr><td><b>P0 Falsification</b></td><td>Measure duplicate prefill for cold bursts; fit the cost model on an idle replica; verify baseline behavior; confirm the T4 environment.</td><td>H1 and H4 have a keep or pivot decision.</td></tr>
+<tr><td><b>P1 Core</b></td><td>Hashing, directory, cost fit, queue, coalescer, routing policies, telemetry.</td><td>Unit and race tests pass; demo runs end to end.</td></tr>
+<tr><td><b>P2 Gateway</b></td><td>HTTP proxy, SSE, admission, hold and spill integration, metrics and audit.</td><td>Two same-prompt requests coalesce in an integration test.</td></tr>
+<tr><td><b>P3 Simulation</b></td><td>Trace generators, cluster model, queue model, experiment matrix, figures.</td><td>Burst, load, long-context, queue and affinity runs are reproducible.</td></tr>
+<tr><td><b>P4 Evaluation</b></td><td>Real T4 calibration and fidelity runs, tuned baselines, paper.</td><td>Fidelity MAPE at or below 10 percent; baseline tuning budget equal.</td></tr>
+</table>
+<p>The prototype covers P0 through P3 at simulation fidelity. P4 is the next gate. The report keeps the P0 language because the plan deliberately separates a mechanism that works in a model from a deployment result.</p>
+
+<h2>6.2 Architecture</h2>
+<figure>
+  <img src="../docs/architecture.svg" alt="Bales architecture">
+  <figcaption><b>Figure 1.</b> Component view. Requests pass through admission, the virtual-deadline queue, the coalescer, and the ECT router before an OpenAI-compatible replica. Telemetry returns cached-token and timing feedback to the directory auditor and cost calibrator.</figcaption>
+</figure>
+<p>The gateway owns no model state. Replicas remain standard OpenAI-compatible servers. The adapter reads `/metrics` for running and waiting counts and KV utilization, and parses `usage.prompt_tokens_details.cached_tokens` from the response. A replica that fails three scrapes is marked unhealthy until a scrape succeeds. The gateway can restart without losing model state; in-flight clients see a closed connection.</p>
+<figure>
+  <img src="flow.svg" alt="Request flow" style="max-height:180mm">
+  <figcaption><b>Figure 2.</b> Request flow. The leader test uses the full chain hash. A positive hold decision is still bounded by slack and the deployment cap; a leader that fails before its first byte closes the group as failed and releases waiters to spill.</figcaption>
+</figure>
+
+<h2>6.3 Algorithms</h2>
+<h3>Algorithm 1: Admission and virtual deadline</h3>
+<pre class="algo">input: request r, class c, estimated cost e, queue Q
+if Q.queued_work + e &gt; Q_max: return 429
+offset(r) = D[c] + eta * e
+deadline(r) = arrival(r) + offset(r)
+Q.push(r, deadline(r))
+return accepted</pre>
+<p>Deadlines are static. The heap order depends only on arrival time, class, and estimated cost, so the queue never re-heapifies as time advances. The insertion is O(log n).</p>
+
+<h3>Algorithm 2: Hold or spill</h3>
+<pre class="algo">input: follower f, leader l, cost model M
+tau = max(0, l.est_done - now)
+saving = M.cost(f.q + f.shared, 0) - M.cost(f.q, f.shared)
+gain = saving - tau - (wait_on(l.replica) - wait_on(best_other))
+if gain &lt;= epsilon: return SPILL
+if tau &gt; f.slack or tau &gt; delta_max: return SPILL
+deadline = min(1.5 * tau, f.slack, delta_max)
+return HOLD(deadline)</pre>
+<p>For an exact prompt duplicate, <code>f.q</code> is zero and the saving is the value of the whole cached prefix. The prototype uses the exact difference rather than assuming the two attention coefficients are equal, so the rule remains correct after calibration.</p>
+
+<h3>Algorithm 3: Earliest-completion-time routing</h3>
+<pre class="algo">input: request r, replicas R, model M
+best = none
+for each healthy replica i in R:
+    uncached = max(0, r.tokens - cached_belief[i])
+    if KV_used[i] + uncached + r.output &gt; KV_max[i]: continue
+    step = ITL0 + kappa * min(uncached, chunk)
+    if r.stream and (step &gt; ITL_budget or inflight[i] &gt; max_stream): continue
+    score = queue_wait[i] + M.cost(uncached, cached_belief[i]) / speed[i]
+    if r.stream: score += interference * inflight[i]
+    best = min(best, score)
+if best is none: return least_loaded_healthy(R)
+return best</pre>
+
+<h3>Algorithm 4: Affinity gate</h3>
+<pre class="algo">input: group g, rate lambda, prefix L, suffix q
+recoverable = lambda * M.saving(q, L)
+if recoverable &lt; tau_gate * capacity_per_replica * replicas:
+    return SPREAD
+k = ceil(recoverable / (theta * capacity_per_replica))
+return PIN if k &lt;= 1 else REPLICATE(k)</pre>
+<p>The gate is a threshold rule, not a learned policy. It answers CacheRoute's negative cases and DeepSeek's no-affinity design with an explicit condition: affinity pays only when the recoverable prefill work is large relative to the capacity it would skew.</p>
+
+<h2>6.4 Data and telemetry</h2>
+<p>Every request writes a 24-column CSV row: timestamp, request and group identity, tenant, class, model, prompt and cached tokens, replica, policy and reason, coalescing flag, hold time and outcome, queue and prefill estimates, TTFT, total time, completion tokens, status, stream flag, slack, and error. The directory auditor compares predicted cached tokens with the engine report and exports precision and recall. The cost calibrator keeps a sliding window of clean prefill samples and refits with non-negative least squares. The fitted model is damped toward the previous model so a noisy window cannot swing routing.</p>
+
+<h2>6.5 Experiment design</h2>
+<table>
+<tr><th style="width:7%">ID</th><th>Question</th><th>Prototype status</th></tr>
+<tr><td>H1</td><td>Does vLLM duplicate prefill for cold same-prompt bursts?</td><td>Not run on GPU. The simulator exposes the mechanism.</td></tr>
+<tr><td>H2</td><td>Does gateway coalescing beat speculative-indexing affinity at contended load?</td><td>Simulated: burst P50 142.5 ms versus 504.6 ms round robin. Baseline tuning pending.</td></tr>
+<tr><td>H3</td><td>Does a load-aware rule avoid the low-load regression of always holding?</td><td>Decision unit tests pass; a real-load sweep is pending.</td></tr>
+<tr><td>H4</td><td>Does fitted cost beat linear scoring on long contexts?</td><td>Simulated: long-context P99 1209 ms versus 3036 ms. The gain comes mainly from queue-aware ECT, not the quadratic term.</td></tr>
+<tr><td>H5</td><td>Does the virtual-deadline queue dominate strict priority and WFQ?</td><td>Not supported. EDF matches strict priority under the default class deadlines; shorter batch deadlines trade stream latency for batch wait.</td></tr>
+<tr><td>H6</td><td>Does the affinity gate avoid cache-affinity regressions?</td><td>Gate decisions computed for six traces; a gated routing policy is not yet implemented.</td></tr>
+<tr><td>H7</td><td>Does the simulator match real T4 runs within 10 percent MAPE?</td><td>Not measured. No GPU runs.</td></tr>
+</table>
+
+<h2>6.6 Implementation</h2>
+<p>The repository is organized by mechanism: <code>internal/cost</code> for the model and fit, <code>internal/prefix</code> for hashing and belief, <code>internal/queue</code> for deadlines, <code>internal/coalesce</code> for the leader registry, <code>internal/sched</code> for policies, <code>internal/engine</code> for the OpenAI adapter, <code>internal/gateway</code> for the HTTP path, <code>internal/sim</code> for traces and experiments, and <code>internal/telemetry</code> for the CSV contract. The binary set is <code>bales-gateway</code>, <code>bales-mockworker</code>, <code>bales-simulate</code>, and <code>bales-calibrate</code>.</p>
+<p>The test suite includes table-driven cost and policy tests, a 200-trial queue wait-bound fuzz test, race tests for the coalescer registry, an HTTP integration test that coalesces two followers, and a claims validator in CI. Benchmarks cover the decision core, ECT pick, queue push and pop, and 64 KB chained hashing.</p>
+
+<h2>6.7 Timeline</h2>
+<table>
+<tr><th>Week</th><th>Work</th><th>Output</th></tr>
+<tr><td>1</td><td>Falsification: duplicate prefill, cost profile, baseline ports, environment check.</td><td>Gate G0; hypotheses frozen.</td></tr>
+<tr><td>2</td><td>Cost, directory, queue, coalescer, policies.</td><td>Core packages and tests.</td></tr>
+<tr><td>3</td><td>Gateway, SSE proxy, telemetry, chaos tests.</td><td>Working demo and integration tests.</td></tr>
+<tr><td>4</td><td>Queue bound fuzz, mixed-lane sweeps.</td><td>Pareto data and bound check.</td></tr>
+<tr><td>5</td><td>Simulator, traces, fidelity calibration.</td><td>BalesBench prototype.</td></tr>
+<tr><td>6</td><td>Large-R simulation, tuned baselines.</td><td>Gate G2.</td></tr>
+<tr><td>7</td><td>Affinity gate, long-context runs, ablations.</td><td>Evaluation chapter.</td></tr>
+<tr><td>8</td><td>Report, reproduction scripts, release.</td><td>v0.2.0 tag.</td></tr>
+</table>
+
+<h2>6.8 Risks and mitigations</h2>
+<table>
+<tr><th style="width:32%">Risk</th><th>Mitigation in the prototype</th></tr>
+<tr><td>Engine already deduplicates in-flight prefixes</td><td>The simulator and tests separate belief from actual cache; the GPU experiment remains the deciding test.</td></tr>
+<tr><td>Baseline tuning decides the headline</td><td>Every result is labelled simulated and untuned; the report does not claim a win over production routers.</td></tr>
+<tr><td>Simulator fidelity</td><td>Claims are restricted to relative comparisons until H7 passes.</td></tr>
+<tr><td>Directory belief diverges</td><td>Auditor precision and recall are exported; predictions are compared with engine cached tokens.</td></tr>
+<tr><td>Coalescer races and leader death</td><td>Group completion is idempotent; leader failure closes waiters as failed; race tests cover the registry.</td></tr>
+<tr><td>Cross-tenant timing leak</td><td>Hashes are tenant-salted and coalescing is per salt. A deployment must change the default salt.</td></tr>
+</table>
+</div>
+
+<!-- RESULTS -->
+<div class="section">
+<h1>7. Results and Screenshots</h1>
+<p>All cluster results in this chapter come from <code>internal/sim</code> with three seeds and four replicas. The simulator uses one prefill slot per replica and no cross-request decode batching. Microbenchmarks ran on an Apple M5 host. The evidence ledger maps each number to a run file.</p>
+
+<h2>7.1 Verification</h2>
+<figure>
+  <img class="screenshot" src="screenshots/tests.png" alt="Test run screenshot">
+  <figcaption><b>Figure 3.</b> Captured output of the test suite; the same commands run in CI, where the claims validator checks the evidence ledger schema and status values.</figcaption>
+</figure>
+<table>
+<tr><th>Check</th><th>Command</th><th>Result</th></tr>
+<tr><td>Unit tests</td><td><code>go test ./...</code></td><td>All packages pass.</td></tr>
+<tr><td>Race detector</td><td><code>go test -race ./...</code></td><td>All packages pass.</td></tr>
+<tr><td>Vet</td><td><code>go vet ./...</code></td><td>Clean.</td></tr>
+<tr><td>Claims</td><td><code>python3 scripts/check_claims.py</code></td><td>26 claims, 21 verified, 2 open, 3 partial.</td></tr>
+</table>
+
+<h2>7.2 Gateway demo</h2>
+<figure>
+  <img class="screenshot" src="screenshots/demo.png" alt="Gateway demo screenshot">
+  <figcaption><b>Figure 4.</b> Local demo with two mock workers. Four staggered copies of one prompt produce one leader, two released followers, and one spill when the remaining prefill exceeds the hold cap. The counters and CSV are captured from the run.</figcaption>
+</figure>
+
+<h2>7.3 Cold burst</h2>
+<figure>
+  <img src="../evidence/figures/burst_ttft.svg" alt="Burst TTFT chart">
+  <figcaption><b>Figure 5.</b> Cold same-prompt burst, 32 requests, 2048-token prompt, 3 ms stagger, four replicas. The all-request and follower P50 bars are shown. Coalescing reduces P50 from 504.6 ms to 142.5 ms.</figcaption>
+</figure>
+<figure>
+  <img src="../evidence/figures/burst_prefill.svg" alt="Burst prefill chart">
+  <figcaption><b>Figure 6.</b> Prefill work for the same trace. Coalescing reduces simulated prefill from 3886.6 ms to 509.4 ms, about 87 percent. The duplicate-token ratio falls from 0.969 to 0.667 because two early followers spill before the hold becomes worthwhile.</figcaption>
+</figure>
+
+<h2>7.4 Offered load</h2>
+<figure>
+  <img src="../evidence/figures/load_p99.svg" alt="Load sweep chart">
+  <figcaption><b>Figure 7.</b> Mean P99 TTFT over three seeds on a Poisson load trace with hot and unique prefixes. The prototype is close to round robin. The simplified llm-d-style scorer herds requests toward a speculative warm entry and records worse tails. This is a baseline tuning warning; production llm-d is not evaluated here.</figcaption>
+</figure>
+
+<h2>7.5 Long context</h2>
+<figure>
+  <img src="../evidence/figures/longctx_p99.svg" alt="Long context chart">
+  <figcaption><b>Figure 8.</b> Long-context P99 TTFT with 8k-token shared prefixes. ECT lowers P99 from 3036 ms to 1209 ms at 6 requests per second and from 3847 ms to 1319 ms at 10 requests per second. The gain is dominated by queue-aware placement; the linear and quadratic ECT variants are close.</figcaption>
+</figure>
+
+<h2>7.6 Queue tradeoff</h2>
+<figure>
+  <img src="../evidence/figures/queue_frontier.svg" alt="Queue tradeoff chart">
+  <figcaption><b>Figure 9.</b> Queue tradeoff at 8 requests per second, seed 1. Strict priority protects stream P99 at the cost of batch wait. EDF with the default 5 s batch deadline overlaps strict priority. An 0.8 s batch deadline lowers batch wait while raising stream P99 to 4662 ms. Choosing a shorter batch deadline moves latency from batch work to streams.</figcaption>
+</figure>
+<table>
+<tr><th>Policy</th><th>Stream P99 (ms)</th><th>Batch P99 (ms)</th><th>Stream goodput (req/s)</th></tr>
+<tr><td>FIFO</td><td>5024.9</td><td>4648.9</td><td>1.30</td></tr>
+<tr><td>Strict priority</td><td>562.2</td><td>5108.8</td><td>5.30</td></tr>
+<tr><td>EDF, 5 s batch</td><td>562.2</td><td>5108.8</td><td>5.30</td></tr>
+<tr><td>EDF, 0.8 s batch</td><td>4661.9</td><td>4893.1</td><td>1.90</td></tr>
+</table>
+
+<h2>7.7 Affinity sensitivity</h2>
+<figure>
+  <img src="../evidence/figures/affinity_p99.svg" alt="Affinity chart">
+  <figcaption><b>Figure 10.</b> P99 TTFT for six prefix mixes. A single-pin affinity policy is worse than round robin on most traces because it concentrates load. The gate prescribes replicate or spread for these mixes; implementing the gated policy is future work.</figcaption>
+</figure>
+
+<h2>7.8 Ablation and microbenchmarks</h2>
+<figure>
+  <img src="../evidence/figures/ablation.svg" alt="Ablation chart">
+  <figcaption><b>Figure 11.</b> Burst ablation. The weighted score and llmd-style policies herd on the speculative warm entry. ECT removes the herd; coalescing removes the remaining duplicate work.</figcaption>
+</figure>
+<table>
+<tr><th>Benchmark</th><th>Result (Apple M5)</th></tr>
+<tr><td>Coalescing decision</td><td>15.9 ns/op, 0 allocations</td></tr>
+<tr><td>ECT pick, 8 replicas</td><td>33.9 ns/op, 0 allocations</td></tr>
+<tr><td>Queue push and pop</td><td>37.7 ns/op</td></tr>
+<tr><td>Chained block hashing, 64 KB</td><td>60.9 us, 1.08 GB/s</td></tr>
+</table>
+<p>The decision core is not the bottleneck. At 1.08 GB/s, hashing a 2k-token prompt of about 8 KB costs roughly 7.4 microseconds. That is small relative to a prefill of tens to hundreds of milliseconds, but it is not below one microsecond per request. The report keeps the two numbers separate.</p>
+
+<h2>7.9 Threats to validity</h2>
+<ul>
+<li><b>Simulator fidelity.</b> One prefill slot per replica and no continuous decode batching overstate queueing. Relative differences are meaningful; absolute latencies should not be compared with a real deployment.</li>
+<li><b>Baseline strength.</b> llm-d, Dynamo, CacheRoute, and Preble are simplified ports. The tuning budget is equal in principle but not yet spent.</li>
+<li><b>Trace coverage.</b> All traces are synthetic. Mooncake and Bailian trace adaptors are planned but not included.</li>
+<li><b>No GPU data.</b> The cost coefficients are plausible defaults, not T4 measurements. H7 is unmeasured.</li>
+<li><b>Coalescing scope.</b> Coalescing matches exact prompt chains, so agent fan-out with different suffixes is not coalesced.</li>
+</ul>
+</div>
+
+<!-- CONCLUSION -->
+<div class="section">
+<h1>8. Conclusion and Future Work</h1>
+<p>The prototype demonstrates a coherent gateway design and a working implementation. Three results are worth keeping. First, same-prompt bursts create duplicate prefill in the simulator, and gateway coalescing removes most of it while lowering follower TTFT. Second, a queue-aware ECT router avoids the herd that a speculative cache belief creates for simpler scorers, with a large long-context P99 gap in the simulated workload. Third, the queue experiment shows that deadline choice is a real tradeoff: strict priority protects streams and hurts batch work, and shortening the batch deadline transfers latency back to streams.</p>
+<p>Two planned claims did not survive the prototype. The quadratic cost term did not produce a routing gain on its own; the queue and cache-hit value did the work. EDF did not dominate strict priority under the default class deadlines. Both outcomes match the plan's warning that the quadratic term is second-order below about 4k tokens and that class-separated deadlines collapse EDF toward strict priority. The report records them as negative results rather than hiding them.</p>
+<p>Future work has a clear order. The first gate is a real T4 environment with vLLM: measure duplicate prefill, fit the cost model on an idle replica, and compare the simulator with the real runs at two replicas. The second is a tuned baseline study with an equal hyper-parameter budget for llm-d-style, Dynamo-style, DualMap, Preble, and CacheRoute policies. The third is a gated affinity policy and a nested-prefix coalescer for agent fan-out. The fourth is a threat model and a production tenant-salt path. Only after those steps should the project claim a deployment result.</p>
+<p>The package that accompanies this report contains the code, the simulator, the evidence ledger, the figures, the presentation, and a study guide. Every number in the README is traceable to a run file or a primary source. The prototype is intentionally narrow: it shows what the gateway mechanisms do in a controlled model, and it states plainly what remains unmeasured.</p>
+
+<h2>Acknowledgements</h2>
+<p>The design follows the evidence-gated v2 plan and the published systems listed in the bibliography. Errors and simplifications are the author's.</p>
+</div>
+
+<!-- REFERENCES -->
+<div class="section">
+<h1>Bibliography</h1>
+<ol class="refs">
+<li>R. Qin et al., “Mooncake: A KVCache-centric Disaggregated Architecture for LLM Serving,” <i>ACM Transactions on Storage</i>, 2025. DOI: 10.1145/3773772.</li>
+<li>J. Liao, M. Xu, W. Zheng, Y. Wang, K. Ye, R. Buyya, C. Xu, “DOPD,” <i>IEEE Transactions on Services Computing</i>, 2026. DOI: 10.1109/TSC.2026.3670011.</li>
+<li>A. Bari, P. Hegde, G. de Veciana, “Optimal Scheduling Algorithms for LLM Inference: Theory and Practice,” <i>Proceedings of the ACM on Measurement and Analysis of Computing Systems</i>, 9(3), Article 59, 2025. DOI: 10.1145/3771574.</li>
+<li>R. Zhu et al., “Cannikin,” <i>IEEE Transactions on Parallel and Distributed Systems</i>, 36(9):1972-1984, 2025. DOI: 10.1109/TPDS.2025.3590014.</li>
+<li>Y. Lin et al., “Serving LLM in Distributed GPU Cluster With Fine-Grain Pipeline Constraints,” <i>IEEE Transactions on Services Computing</i>, 18(5):3164-3176, 2025.</li>
+<li>J. Hu, M. Xu, K. Ye, C. Xu, “BrownoutServe,” <i>IEEE Transactions on Computers</i>, 75(4):1636-1649, 2026.</li>
+<li>“FairCache: Demystifying Cache-Induced Unfairness in Multi-Tenant LLM Serving,” <i>IEEE Transactions on Parallel and Distributed Systems</i>, 37(11):2390-2406, 2026.</li>
+<li>“The Early Bird Catches the Leak: Unveiling Timing Side Channels in LLM Serving Systems,” <i>IEEE Transactions on Information Forensics and Security</i>, 20:11431-11446, 2025.</li>
+<li>PEEK: pending-queue prefix scheduling for LLM serving, arXiv:2607.02525, 2026.</li>
+<li>CacheRoute: planned prefix affinity for LLM serving, arXiv:2608.19677, 2026.</li>
+<li>DualMap: two-hash prefix-aware routing for LLM serving, ICLR 2026. arXiv:2602.06502.</li>
+<li>“Preble: Efficient Distributed Prompt Scheduling for LLM Serving,” ICLR 2025.</li>
+<li>llm-d project, inference scheduler and prefix cache documentation, 2026. github.com/llm-d.</li>
+<li>NVIDIA Dynamo, KV router and approximate cache mode documentation, 2026. github.com/ai-dynamo.</li>
+<li>SGLang issue 48963, in-batch prefix caching and duplicate prefill, 2026. github.com/sgl-project/sglang/issues/48963.</li>
+<li>DeepSeek, DeepInfer deployment notes and Q&amp;A, October 2026.</li>
+<li>Cloudflare blog post on an AI code reviewer and prompt caching, October 19, 2026.</li>
+<li>W. Kwon et al., “Efficient Memory Management for Large Language Model Serving with PagedAttention,” <i>SOSP</i>, 2023.</li>
+<li>A. Agrawal et al., “Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve,” <i>OSDI</i>, 2024.</li>
+<li>Y. Zhong et al., “DistServe: Disaggregating Prefill and Decoding for Goodput-Optimized Large Language Model Serving,” <i>OSDI</i>, 2024.</li>
+<li>Y. Sheng et al., “Fairness in Serving Large Language Models,” <i>OSDI</i>, 2024.</li>
+</ol>
+<p class="footnote">DOI-bearing entries were checked against the publisher record. Entries without a DOI are cited by venue, year, and public repository or issue where available. The claims ledger marks sources that were seen only in secondary lists; they are not used for numeric claims in this report.</p>
+</div>
+
+</body>
+</html>

@@ -239,7 +239,18 @@ def queue_frontier(path, rows):
     ymax = nice_max(max(p[1] for p in points))
     body = [text(left, 32, "Queue tradeoff at 8 req/s, seed 1", 16, weight="600")]
     body.append(
-        axes(w, h, ymax, "Batch P99 wait (ms)", [], "Stream P99 TTFT (ms)", left, right, top, bottom)
+        axes(
+            w,
+            h,
+            ymax,
+            "Batch P99 wait (ms)",
+            [],
+            "Stream P99 TTFT (ms)",
+            left,
+            right,
+            top,
+            bottom,
+        )
     )
     for i in range(6):
         v = xmax * i / 5
@@ -342,6 +353,7 @@ def main():
         [p50, follower],
         "TTFT (ms)",
         [TEAL, GOLD],
+        ["all requests P50", "followers P50"],
     )
     series_bar(
         "burst_prefill.svg",
@@ -379,6 +391,7 @@ def main():
         [rate6, rate10],
         "P99 TTFT (ms)",
         [TEAL, NAVY],
+        ["6 req/s", "10 req/s"],
     )
     queue_frontier("queue_frontier.svg", read("queue_summary.csv"))
     aff = read("affinity_summary.csv")
@@ -416,6 +429,7 @@ def main():
         rows,
         "P99 TTFT (ms)",
         [TEAL, CORAL, NAVY],
+        ["round robin", "single-pin affinity", "Bales ECT"],
     )
     abl = read("ablation_summary.csv")
     bya = {r["policy"]: r for r in abl}
