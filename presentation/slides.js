@@ -161,17 +161,10 @@
 
   // ---------- slide 2: duplicate reading ----------
   const asciiBurst = $("#asciiBurst");
-  function burstFrame(step) {
-    if (!asciiBurst) return;
-    const n1 = Math.min(20, step);
-    const n2 = Math.min(20, Math.max(0, step - 7));
-    const n3 = Math.min(20, Math.max(0, step - 14));
-    const bar = (n, color) =>
-      `<span class="${color}">[${"█".repeat(n)}${"░".repeat(20 - n)}]</span>`;
-    const hot =
-      n3 >= 20
-        ? '<span class="bad">duplicate</span>'
-        : '<span class="dim">reading</span>';
+  let burstReady = false;
+  const BURST_WIDTH = 20;
+  function burstInit() {
+    if (!asciiBurst || burstReady) return;
     asciiBurst.innerHTML =
       ` user A ─┐\n` +
       ` user B ─┼── same document ──▶ <span class="teal">[ Bales ]</span>\n` +
@@ -179,10 +172,55 @@
       `                                   ▼\n` +
       `                         ┌──────────────────────┐\n` +
       `                         │ GPU 0                │\n` +
-      `                         │ pass 1 ${bar(n1, "teal")}  ${hot}\n` +
-      `                         │ pass 2 ${bar(n2, "gold")}  ${hot}\n` +
-      `                         │ pass 3 ${bar(n3, "gold")}  ${hot}\n` +
+      `                         │ pass 1 [<span id="b1" class="teal"></span>] <span id="s1" class="dim">reading</span>\n` +
+      `                         │ pass 2 [<span id="b2" class="gold"></span>] <span id="s2" class="dim">reading</span>\n` +
+      `                         │ pass 3 [<span id="b3" class="gold"></span>] <span id="s3" class="dim">reading</span>\n` +
       `                         └──────────────────────┘`;
+    burstReady = true;
+  }
+  function setBurstBar(id, filled) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const n = Math.max(0, Math.min(BURST_WIDTH, filled));
+    el.textContent = "█".repeat(n) + "░".repeat(BURST_WIDTH - n);
+  }
+  function setBurstStatus(status) {
+    const cls = status === "duplicate" ? "bad" : status === "clearing" ? "gold" : "dim";
+    ["s1", "s2", "s3"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = status.padEnd(9);
+      el.className = cls;
+    });
+  }
+  function burstFrame(frame) {
+    if (!asciiBurst) return;
+    burstInit();
+    const FILL = 34, HOLD = 10, DRAIN = 14, PAUSE = 4;
+    const cycle = FILL + HOLD + DRAIN + PAUSE;
+    const f = ((frame % cycle) + cycle) % cycle;
+    let n1 = 0, n2 = 0, n3 = 0;
+    let status = "reading";
+    if (f < FILL) {
+      n1 = Math.min(BURST_WIDTH, f);
+      n2 = Math.max(0, Math.min(BURST_WIDTH, f - 7));
+      n3 = Math.max(0, Math.min(BURST_WIDTH, f - 14));
+      status = n3 >= BURST_WIDTH ? "duplicate" : "reading";
+    } else if (f < FILL + HOLD) {
+      n1 = n2 = n3 = BURST_WIDTH;
+      status = "duplicate";
+    } else if (f < FILL + HOLD + DRAIN) {
+      const t = (f - FILL - HOLD) / DRAIN;
+      const n = Math.round(BURST_WIDTH * (1 - t));
+      n1 = n2 = n3 = n;
+      status = "clearing";
+    } else {
+      status = "ready";
+    }
+    setBurstBar("b1", n1);
+    setBurstBar("b2", n2);
+    setBurstBar("b3", n3);
+    setBurstStatus(status);
   }
 
   // ---------- slide 3: aim ----------
@@ -683,13 +721,13 @@
       window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (index === 1 && asciiBurst) {
-      let step = 0;
-      burstFrame(reduce ? 30 : 0);
+      let frame = 0;
+      burstFrame(reduce ? 40 : 0);
       if (!reduce)
         burstTimer = setInterval(() => {
-          step = step >= 34 ? 0 : step + 1;
-          burstFrame(step);
-        }, 110);
+          frame++;
+          burstFrame(frame);
+        }, 90);
     }
     if (index === 5 && asciiFlow) {
       let step = 0;
