@@ -200,10 +200,10 @@
         <div class="control"><label for="qRange">new query tokens <output id="qVal">2048</output></label><input id="qRange" type="range" min="128" max="8192" step="64" value="2048"></div>
         <div class="control"><label for="cRange">cached context tokens <output id="cVal">4096</output></label><input id="cRange" type="range" min="0" max="16384" step="256" value="4096"></div>
         <div class="metric-grid">
-          <div><span>prefill cost</span><b id="costOut">—</b></div>
-          <div><span>cold prefill</span><b id="coldOut">—</b></div>
-          <div><span>hit saving</span><b id="saveOut">—</b></div>
-          <div><span>attention share</span><b id="attnOut">—</b></div>
+          <div><span>prefill cost</span><b id="costOut">-</b></div>
+          <div><span>cold prefill</span><b id="coldOut">-</b></div>
+          <div><span>hit saving</span><b id="saveOut">-</b></div>
+          <div><span>attention share</span><b id="attnOut">-</b></div>
         </div>
         <p class="small">q is new query tokens and c is the cached context. The cold comparison uses the full prompt q+c. Defaults approximate a Qwen2.5-1.5B class model on a T4; a deployment replaces them with idle-replica calibration.</p>
       </div>
