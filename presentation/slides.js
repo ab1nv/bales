@@ -255,7 +255,7 @@
         `cold   <span class="cold">[${blocks(cold, cold, 26)}]</span> ${cold.toFixed(0)} ms\n` +
         `warm   <span class="warm">[${blocks(warm, cold, 26)}]</span> ${warm.toFixed(0)} ms\n` +
         `saved  <span class="saved">[${blocks(saved, cold, 26)}]</span> ${saved.toFixed(0)} ms\n\n` +
-        `reading ${q.toLocaleString()} new words over ${c.toLocaleString()} shared words\n` +
+        `reading ${q.toLocaleString()} new tokens over ${c.toLocaleString()} cached tokens\n` +
         `attention is ${(Math.min(1, attn) * 100).toFixed(0)}% of the warm reading time`;
     }
   }

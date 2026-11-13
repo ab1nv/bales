@@ -73,7 +73,7 @@
     </div>
     <div class="stat-strip">
       <div><b>32</b><span>requests in one burst</span></div>
-      <div><b>2,000</b><span>shared words in the prompt</span></div>
+      <div><b>2,000</b><span>tokens in the shared prompt</span></div>
       <div><b>87%</b><span>less repeated reading in the simulation</span></div>
     </div>
   </div>
@@ -160,15 +160,15 @@
     <div class="cols controls-right">
       <div>
         <p class="lead">A cache hit removes the reading work for the shared part. The saved time is the price of that reading, and it grows faster than the prefix because attention also grows.</p>
-        <div class="control"><label for="qRange">new words to read <output id="qVal">2,048</output></label><input id="qRange" type="range" min="256" max="8192" step="128" value="2048"></div>
-        <div class="control"><label for="cRange">shared words in memory <output id="cVal">4,096</output></label><input id="cRange" type="range" min="0" max="8192" step="128" value="4096"></div>
+        <div class="control"><label for="qRange">new tokens to read <output id="qVal">2,048</output></label><input id="qRange" type="range" min="256" max="8192" step="128" value="2048"></div>
+        <div class="control"><label for="cRange">cached tokens in memory <output id="cVal">4,096</output></label><input id="cRange" type="range" min="0" max="8192" step="128" value="4096"></div>
         <div class="metric-grid">
           <div><span>warm request</span><b id="costOut">178 ms</b></div>
           <div><span>cold request</span><b id="coldOut">439 ms</b></div>
           <div><span>saved</span><b id="saveOut">261 ms</b></div>
           <div><span>attention share</span><b id="attnOut">41%</b></div>
         </div>
-        <p class="small">The simple form: reading cost = attention over shared text + attention over new text + fixed work. The full model is fitted per deployment.</p>
+        <p class="small">The simple form: reading cost = attention over shared text + attention over new text + fixed work. A token is a small piece of text, roughly a word piece. The full model is fitted per deployment.</p>
       </div>
       <div class="chart-card">
         <div class="card-label">same request, with and without the shared prefix</div>
@@ -186,7 +186,7 @@
     <div class="cols controls-right">
       <div>
         <div class="formula">wait if&nbsp; saved reading &gt; time left + extra queue</div>
-        <div class="control"><label for="lRange">shared prefix <output id="lVal">4,096</output> words</label><input id="lRange" type="range" min="0" max="8192" step="128" value="4096"></div>
+        <div class="control"><label for="lRange">shared prefix <output id="lVal">4,096</output> tokens</label><input id="lRange" type="range" min="0" max="8192" step="128" value="4096"></div>
         <div class="control"><label for="tauRange">leader has left <output id="tauVal">60</output> ms</label><input id="tauRange" type="range" min="0" max="300" step="5" value="60"></div>
         <div class="control"><label for="gapRange">extra queue on the leader <output id="gapVal">0</output> ms</label><input id="gapRange" type="range" min="-150" max="150" step="5" value="0"></div>
         <div class="control"><label for="slackRange">request can wait <output id="slackVal">2000</output> ms</label><input id="slackRange" type="range" min="50" max="2000" step="50" value="2000"></div>
@@ -249,7 +249,7 @@
       <div>
         <p class="lead">Sending a prefix group to one GPU keeps the cache hot. It can also overload that GPU. The gate chooses spread, pin, or replicate from the work the cache saves.</p>
         <div class="control"><label for="rateRange">group rate <output id="rateVal">6</output> req/s</label><input id="rateRange" type="range" min="1" max="20" step="1" value="6"></div>
-        <div class="control"><label for="prefixRange">shared prefix <output id="prefixVal">4,096</output> words</label><input id="prefixRange" type="range" min="0" max="8192" step="256" value="4096"></div>
+        <div class="control"><label for="prefixRange">shared prefix <output id="prefixVal">4,096</output> tokens</label><input id="prefixRange" type="range" min="0" max="8192" step="256" value="4096"></div>
         <div class="decision-row"><span class="decision" id="gateDecision">REPLICATE</span><span class="small" id="gateReason">2 replicas, recoverable 1566 ms/s</span></div>
         <p class="small">Single-pin affinity was two to three times worse than round robin on hot traces. The gate prescribes replicate for those groups.</p>
       </div>
