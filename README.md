@@ -150,7 +150,7 @@ internal/
 evidence/       claims ledger, manifests, raw runs, figures
 reports/        REPORT.pdf and its source
 presentation/   interactive HTML deck
-archive/        STUDY.pdf
+archive/        STUDY.pdf and SPEAK.pdf
 ```
 
 ## Limitations
@@ -169,7 +169,8 @@ archive/        STUDY.pdf
 
 - `reports/REPORT.pdf`: project report
 - `presentation/index.html`: 15-slide interactive deck, open it in a browser
-- `archive/STUDY.pdf`: plain-language study guide and speaking notes
+- `archive/STUDY.pdf`: plain-language study guide and technical background
+- `archive/SPEAK.pdf`: timed speaking script for all 15 slides, under 10 minutes
 - `evidence/README.md`: how the claims and runs were produced
 
 ## License
