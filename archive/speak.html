@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bales Speaking Script</title>
+<style>
+  @page { size: A4; margin: 19mm 18mm 18mm 18mm; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; color: #17242B; background: #fff; font-family: "Source Serif 4", Georgia, "Times New Roman", serif; font-size: 11.5pt; line-height: 1.55; }
+  h1, h2, h3 { font-family: Inter, Helvetica, Arial, sans-serif; color: #14252E; }
+  h1 { font-size: 27pt; margin: 0 0 3mm; letter-spacing: -0.02em; }
+  h2 { font-size: 18pt; margin: 0 0 2mm; }
+  .cover { page-break-after: always; height: 225mm; position: relative; text-align: center; }
+  .cover img { width: 32mm; margin: 20mm 0 6mm; }
+  .cover h1 { font-size: 38pt; margin: 0; }
+  .cover .sub { font-size: 14pt; color: #4E5D68; margin: 3mm 22mm; line-height: 1.4; }
+  .cover .note { border-left: 3px solid #2A9D8F; background: #F7FBFA; text-align: left; padding: 4mm 5mm; margin: 12mm 20mm 0; font-size: 10pt; }
+  .cover .meta { position: absolute; bottom: 18mm; left: 0; right: 0; font-family: Inter, Helvetica, Arial, sans-serif; font-size: 9pt; color: #5D6B76; }
+  .section { page-break-before: always; }
+  .timing { width: 100%; border-collapse: collapse; font-family: Inter, Helvetica, Arial, sans-serif; font-size: 9.5pt; margin: 4mm 0 6mm; }
+  .timing th { text-align: left; background: #E7F5F2; padding: 2mm; border-bottom: 1px solid #9FC9C2; }
+  .timing td { padding: 1.8mm 2mm; border-bottom: 0.6px solid #D9E1E5; }
+  .speak { page-break-after: always; }
+  .speak:last-child { page-break-after: auto; }
+  .meta { font-family: Inter, Helvetica, Arial, sans-serif; font-size: 9pt; letter-spacing: 0.08em; text-transform: uppercase; color: #178F84; margin-bottom: 2mm; }
+  .onscreen { font-size: 9.5pt; color: #5D6B76; margin: 0 0 5mm; }
+  .say { background: #F7FBFA; border-left: 3px solid #2A9D8F; padding: 5mm 6mm; font-size: 13pt; line-height: 1.65; margin: 0 0 5mm; }
+  .say b { display: block; font-family: Inter, Helvetica, Arial, sans-serif; font-size: 9pt; letter-spacing: 0.08em; text-transform: uppercase; color: #178F84; margin-bottom: 2mm; }
+  .transition { font-size: 10pt; color: #5D6B76; }
+  .transition b { font-family: Inter, Helvetica, Arial, sans-serif; color: #14252E; }
+  .tip { background: #FBF1D5; border-left: 3px solid #D8A93A; padding: 3mm 4mm; font-size: 9.8pt; margin: 5mm 0; }
+  code { font-family: "SFMono-Regular", Menlo, monospace; font-size: 0.9em; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <img src="../assets/logo.png" alt="Bales logo">
+  <h1>Bales</h1>
+  <div class="sub">Speaking script<br>15 slides · under 10 minutes</div>
+  <div class="note">
+    One page per slide. The script is written to be read or glanced at while the slide is on screen.
+    Times run from 0:00 to 8:55, leaving about one minute for transitions and a slow start.
+    If you are running long, shorten slides 4, 10, and 12. Do not skip slide 2 or slide 14.
+  </div>
+  <div class="meta">Prototype v0.2.0 · November 2026<br>github.com/ab1nv/bales · branch proto</div>
+</div>
+
+<div class="section">
+<h1>Run of show</h1>
+<table class="timing">
+<tr><th>#</th><th>Slide</th><th>Time</th><th>Cumulative</th><th>Purpose</th></tr>
+<tr><td>1</td><td>Title</td><td>0:20</td><td>0:20</td><td>Open and signpost</td></tr>
+<tr><td>2</td><td>The problem</td><td>0:40</td><td>1:00</td><td>Duplicate reading</td></tr>
+<tr><td>3</td><td>The aim</td><td>0:40</td><td>1:40</td><td>Three decisions</td></tr>
+<tr><td>4</td><td>Literature survey</td><td>0:40</td><td>2:20</td><td>What exists</td></tr>
+<tr><td>5</td><td>Existing frameworks</td><td>0:35</td><td>2:55</td><td>The open combination</td></tr>
+<tr><td>6</td><td>Request path</td><td>0:40</td><td>3:35</td><td>How the gateway works</td></tr>
+<tr><td>7</td><td>Reading cost</td><td>0:40</td><td>4:15</td><td>Why a hit has a price</td></tr>
+<tr><td>8</td><td>Share or move</td><td>0:40</td><td>4:55</td><td>The hold rule</td></tr>
+<tr><td>9</td><td>Who goes first</td><td>0:40</td><td>5:35</td><td>Deadlines for chat and batch</td></tr>
+<tr><td>10</td><td>Pick a GPU</td><td>0:40</td><td>6:15</td><td>Earliest finish time</td></tr>
+<tr><td>11</td><td>Affinity</td><td>0:35</td><td>6:50</td><td>When a hot prefix hurts</td></tr>
+<tr><td>12</td><td>Status</td><td>0:35</td><td>7:25</td><td>Ahead and behind</td></tr>
+<tr><td>13</td><td>Optimizations</td><td>0:30</td><td>7:55</td><td>What comes next</td></tr>
+<tr><td>14</td><td>Results</td><td>0:45</td><td>8:40</td><td>The measured numbers</td></tr>
+<tr><td>15</td><td>Thank you</td><td>0:15</td><td>8:55</td><td>Close and invite questions</td></tr>
+</table>
+<div class="tip"><b>If a slide takes longer than planned:</b> cut the second sentence in slides 4, 6, 10, and 12. The audience needs slide 2, slide 8, and slide 14 most. Keep the numbers on slide 14 exact.</div>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 1 · 0:00 to 0:20</div>
+<h2>Title</h2>
+<p class="onscreen">On screen: Bales, the subtitle, and the project logo.</p>
+<div class="say"><b>Say</b>Good morning. I am presenting Bales, a prototype gateway for mixed LLM traffic. Before a request reaches a GPU, Bales decides whether two requests can share the reading work, which GPU can finish first, and whose turn it is. I will cover the problem, the aim, the existing work, how the prototype works, what it achieved, and what comes next.</div>
+<p class="transition"><b>Transition:</b> Let me start with the problem.</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 2 · 0:20 to 1:00</div>
+<h2>The problem</h2>
+<p class="onscreen">On screen: one document, three users, one GPU reading it three times.</p>
+<div class="say"><b>Say</b>Before a model answers, it has to read the whole prompt. That reading step is slow. When many users send the same long document at once, the first request starts reading on a GPU. The gateway records a cache entry immediately, so the next requests think the document is already in memory and follow the same path. The GPU reads the same document again, and again. The users wait longer, and the cluster spends GPU time on duplicate work.</div>
+<p class="transition"><b>Transition:</b> So what should the gateway do differently?</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 3 · 1:00 to 1:40</div>
+<h2>The aim</h2>
+<p class="onscreen">On screen: three decision cards and a simple request path.</p>
+<div class="say"><b>Say</b>Bales is a dispatcher between users and GPUs. It makes three decisions. First, can we share the reading? If another request is already reading the same prompt, wait only if the saved work is worth the wait. Otherwise move to another GPU. Second, which GPU can finish first? Compare the queue, the cached text, and the cost of reading the missing part. Third, who goes first? Chat gets a short deadline, batch work gets a long one, and the waiting room is capped. The prototype builds this gateway and a simulator, so the decisions can be tested before using GPU time.</div>
+<p class="transition"><b>Transition:</b> I did not start from a blank page.</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 4 · 1:40 to 2:20</div>
+<h2>Literature survey</h2>
+<p class="onscreen">On screen: fifteen recent systems, grouped by what they contribute.</p>
+<div class="say"><b>Say</b>Mooncake and DOPD study cache-centric serving and scheduling. PEEK solves duplicate prefix work inside one engine. CacheRoute, DualMap, and Preble study prefix-aware routing. llm-d and Dynamo are production routers that keep cache state. SGLang issue 48963 documents the duplicate-prefill problem. DeepInfer uses a fitted cost model, and Cloudflare shows an application-level leader and follower wait. Routing and caching are well studied. The open combination is a gateway-level decision that shares in-flight work, prices the hit, and bounds the wait.</div>
+<p class="transition"><b>Transition:</b> The comparison makes that gap concrete.</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 5 · 2:20 to 2:55</div>
+<h2>Existing frameworks</h2>
+<p class="onscreen">On screen: a comparison table with the Bales target in the last row.</p>
+<div class="say"><b>Say</b>The closest systems have prefix routing. Some have a partial cost signal or a bounded queue. PEEK has an in-flight wait, but inside one engine. The last row is the target for Bales: gateway-level sharing, a fitted cost, a bounded wait, and an open implementation. The table is qualitative. The report has the sources and the limits.</div>
+<p class="transition"><b>Transition:</b> Here is how the prototype puts those pieces together.</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 6 · 2:55 to 3:35</div>
+<h2>Request path</h2>
+<p class="onscreen">On screen: an animated six-stop pipeline from user to GPU and back to measurement.</p>
+<div class="say"><b>Say</b>A request enters admission, where the gateway caps queued work. It gets a fixed deadline and waits in the queue. The sharing step decides whether to wait for a leader or move. The chooser picks the GPU with the smallest expected finish time. The GPU reads the prompt and writes the answer. Finally, the gateway measures the result, audits its prediction, and adjusts. The GPU side stays a standard OpenAI-compatible server. The gateway holds no model state.</div>
+<p class="transition"><b>Transition:</b> The first price the gateway needs is the cost of reading.</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 7 · 3:35 to 4:15</div>
+<h2>Reading cost</h2>
+<p class="onscreen">On screen: a cold bar, a warm bar, and the saved time between them.</p>
+<div class="say"><b>Say</b>A cached prefix removes the reading work for the shared part. On the right, the gold bar is a cold request. It reads both the shared four thousand words and the new two thousand. The teal bar is warm. It reads only the new part. The difference is two hundred sixty-one milliseconds. That is the budget available for waiting. The saved time grows faster than the prefix because attention also grows. This is why a fixed bonus for a cache hit is not enough.</div>
+<p class="transition"><b>Transition:</b> With that price, the sharing decision becomes simple.</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 8 · 4:15 to 4:55</div>
+<h2>Share or move</h2>
+<p class="onscreen">On screen: a leader and follower, two sliders, and a HOLD badge.</p>
+<div class="say"><b>Say</b>The leader has sixty milliseconds of reading left. The follower can wait and reuse the result, or move to another GPU. Waiting saves two hundred sixty-one milliseconds, so the rule holds. If the leader had just started, the wait would be close to the full reading time, and the rule would move the follower. The wait is capped by the request's patience and a two hundred fifty millisecond ceiling. The decision is per request, not one policy for the whole burst.</div>
+<p class="transition"><b>Transition:</b> The second shared decision is who goes first.</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 9 · 4:55 to 5:35</div>
+<h2>Who goes first</h2>
+<p class="onscreen">On screen: chat and batch bars with deadlines and an order row.</p>
+<div class="say"><b>Say</b>Chat and batch share one waiting room. Each request gets a fixed deadline: three hundred milliseconds for chat, five seconds for batch, plus a small weight on reading cost. Bales serves the earliest deadline first. On the right, the chat requests finish first and the batch requests wait. The waiting room is capped, so the wait is finite. One nuance: with a five second batch deadline, earliest-deadline-first behaves almost like strict priority. Shortening the batch deadline is a real tradeoff between chat latency and batch progress.</div>
+<p class="transition"><b>Transition:</b> The third decision is which GPU gets the request.</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 10 · 5:35 to 6:15</div>
+<h2>Pick a GPU</h2>
+<p class="onscreen">On screen: a scoreboard for four GPUs and a policy toggle.</p>
+<div class="say"><b>Say</b>Choosing a GPU is a millisecond calculation. The gateway adds queue time, the cost of reading the missing text, and interference. GPU zero has a large cache but a five hundred millisecond queue, so its score is five hundred fifty-two. GPU two has a smaller cache and almost no queue, so its score is two hundred four. GPU three is skipped because its KV cache is almost full. Least tokens would choose GPU zero because it ignores the queue. Bales chooses GPU two.</div>
+<p class="transition"><b>Transition:</b> There is one more placement question: should a hot prefix stay on one GPU?</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 11 · 6:15 to 6:50</div>
+<h2>Affinity</h2>
+<p class="onscreen">On screen: two sliders, a REPLICATE badge, and four GPU load bars.</p>
+<div class="say"><b>Say</b>Affinity is not free. Sending a hot prefix group to one GPU keeps the cache warm, but it can overload that GPU. The gate compares the work the cache saves with a share of cluster capacity. It spreads when the saving is small, pins when one GPU can carry the group, and replicates when the group needs more than one. In the simulation, single-pin affinity was two to three times worse than round robin on hot traces. The gate prescribes replication for those cases.</div>
+<p class="transition"><b>Transition:</b> So where does the prototype actually stand?</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 12 · 6:50 to 7:25</div>
+<h2>Status</h2>
+<p class="onscreen">On screen: four metrics and a phase-by-phase status table.</p>
+<div class="say"><b>Say</b>The core mechanisms, the gateway, the simulator, and the evidence package are done and tested. The real GPU measurement, simulator fidelity, and tuned baselines are not started. That puts the project ahead on implementation and reproducibility, and behind on hardware evidence. The numbers on this page are the ones I would defend today: twenty-six claims in the ledger, nine core packages, a fifteen nanosecond decision core, and a full test suite that passes.</div>
+<p class="transition"><b>Transition:</b> Three things come first on the path to the target.</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 13 · 7:25 to 7:55</div>
+<h2>Optimizations</h2>
+<p class="onscreen">On screen: six numbered priorities.</p>
+<div class="say"><b>Say</b>One, run the burst and cost calibration on a T4 with vLLM. Two, validate the simulator against real replicas and add continuous batching. Three, give every baseline the same tuning budget. After that come a gated affinity policy, nested-prefix sharing, a security review, and overhead tuning. The first three make the result publishable. The last three make it deployable.</div>
+<p class="transition"><b>Transition:</b> These are the measured results.</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 14 · 7:55 to 8:40</div>
+<h2>Results</h2>
+<p class="onscreen">On screen: burst, queue, and long-context charts.</p>
+<div class="say"><b>Say</b>In the cold burst, sharing cuts P50 time to first token from five hundred four milliseconds to one hundred forty-two, and prefill work by eighty-seven percent. In the queue experiment, strict priority cuts stream P99 from five thousand twenty-five milliseconds to five hundred sixty-two, while batch wait rises. Long-context ECT cuts P99 from three thousand thirty-six to one thousand two hundred nine. The numbers are directional: three seeds, simplified baselines, and no GPU runs.</div>
+<p class="transition"><b>Transition:</b> That is the prototype.</p>
+</div>
+
+<div class="section speak">
+<div class="meta">Slide 15 · 8:40 to 8:55</div>
+<h2>Thank you</h2>
+<p class="onscreen">On screen: the project logo and the repository line.</p>
+<div class="say"><b>Say</b>Thank you. The prototype, report, deck, study guide, and evidence ledger are on branch proto at github.com/ab1nv/bales. I am happy to take questions.</div>
+<p class="transition"><b>If there is no question:</b> offer the demo or the evidence ledger as a starting point.</p>
+</div>
+
+</body>
+</html>

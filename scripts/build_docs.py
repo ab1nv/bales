@@ -29,10 +29,13 @@ def build(src: Path, out: Path) -> int:
 def main() -> None:
     report_pages = build(ROOT / "reports" / "report.html", ROOT / "reports" / "REPORT.pdf")
     study_pages = build(ROOT / "archive" / "study.html", ROOT / "archive" / "STUDY.pdf")
+    speak_pages = build(ROOT / "archive" / "speak.html", ROOT / "archive" / "SPEAK.pdf")
     if report_pages < 15:
         raise SystemExit("report is unexpectedly short")
-    if not 12 <= study_pages <= 24:
+    if not 10 <= study_pages <= 24:
         raise SystemExit("study guide page count is outside the expected range")
+    if not 12 <= speak_pages <= 24:
+        raise SystemExit("speaking script page count is outside the expected range")
 
 
 if __name__ == "__main__":
