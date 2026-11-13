@@ -8,18 +8,12 @@
   const total = slides.length;
   let current = 0;
   let burstTimer = null;
-  let pipeTimer = null;
+  let flowTimer = null;
 
   // ---------- theme ----------
   const root = document.documentElement;
-  const themeButton = $("#themeToggle");
   function applyTheme(theme) {
     root.dataset.theme = theme;
-    themeButton.textContent = theme === "dark" ? "Light" : "Dark";
-    themeButton.setAttribute(
-      "aria-label",
-      theme === "dark" ? "Switch to light theme" : "Switch to dark theme",
-    );
     try {
       localStorage.setItem("bales-theme", theme);
     } catch (e) {
@@ -41,19 +35,14 @@
   const forcedTheme =
     new URLSearchParams(location.search).get("theme") ||
     new URLSearchParams(hashQuery).get("theme");
-  const initialTheme =
+  applyTheme(
     forcedTheme === "dark" || forcedTheme === "light"
       ? forcedTheme
-      : savedTheme || (prefersDark ? "dark" : "light");
-  applyTheme(initialTheme);
-  themeButton.addEventListener("click", () => {
-    applyTheme(root.dataset.theme === "dark" ? "light" : "dark");
-  });
+      : savedTheme || (prefersDark ? "dark" : "light"),
+  );
 
   // ---------- navigation ----------
-  function pad(n) {
-    return String(n).padStart(2, "0");
-  }
+  const pad = (n) => String(n).padStart(2, "0");
   function goTo(index, updateHash = true) {
     index = Math.max(0, Math.min(total - 1, index));
     if (slides[current]) slides[current].classList.remove("active");
@@ -61,22 +50,17 @@
     slides[current].classList.add("active");
     $("#counter").textContent = `${pad(current + 1)} / ${pad(total)}`;
     $("#progressBar").style.width = `${((current + 1) / total) * 100}%`;
-    if (updateHash) {
-      history.replaceState(null, "", `#slide-${current + 1}`);
-    }
+    if (updateHash) history.replaceState(null, "", `#slide-${current + 1}`);
     startSlideAnimations(current);
     slides[current].scrollTop = 0;
   }
-  function next() {
-    goTo(current + 1);
-  }
-  function prev() {
-    goTo(current - 1);
-  }
+  const next = () => goTo(current + 1);
+  const prev = () => goTo(current - 1);
 
   document.addEventListener("keydown", (event) => {
     const tag = (event.target && event.target.tagName) || "";
     if (/INPUT|TEXTAREA|SELECT/.test(tag)) return;
+    if (event.key === " " && tag === "BUTTON") return;
     if (
       event.key === "ArrowRight" ||
       event.key === "PageDown" ||
@@ -94,7 +78,7 @@
       event.preventDefault();
       goTo(total - 1);
     } else if (event.key.toLowerCase() === "t") {
-      themeButton.click();
+      applyTheme(root.dataset.theme === "dark" ? "light" : "dark");
     }
   });
 
@@ -121,11 +105,10 @@
 
   function initialSlide() {
     const match = /slide-(\d+)/.exec(location.hash || "");
-    if (!match) return 0;
-    return Math.min(total - 1, Math.max(0, Number(match[1]) - 1));
+    return match ? Math.min(total - 1, Math.max(0, Number(match[1]) - 1)) : 0;
   }
 
-  // ---------- SVG helpers ----------
+  // ---------- chart helpers ----------
   function mk(svg, tag, attrs = {}) {
     const node = document.createElementNS(NS, tag);
     for (const [key, value] of Object.entries(attrs))
@@ -141,30 +124,26 @@
       x,
       y,
       "text-anchor": opts.anchor || "start",
-      class: opts.class || "",
-      "font-size": opts.size || 10,
+      "font-size": opts.size || 9,
       fill: opts.fill || "var(--muted)",
     });
     node.textContent = text;
-    if (opts.rotate) node.setAttribute("transform", `rotate(-90 ${x} ${y})`);
     return node;
   }
-  function grid(svg, left, top, w, h, rows = 5) {
+  function grid(svg, left, top, w, h, rows = 4) {
     for (let i = 0; i <= rows; i++) {
       const y = top + (h * i) / rows;
       mk(svg, "line", { x1: left, y1: y, x2: left + w, y2: y, class: "grid" });
     }
   }
-  function niceMax(v) {
-    if (!v || v <= 0) return 1;
+  function nice(v) {
+    if (v <= 0) return 1;
     const mag = Math.pow(10, Math.floor(Math.log10(v)));
-    for (const m of [1, 2, 2.5, 5, 10]) {
-      if (v <= m * mag) return m * mag;
-    }
+    for (const m of [1, 2, 2.5, 5, 10]) if (v <= m * mag) return m * mag;
     return 10 * mag;
   }
 
-  // ---------- cost model ----------
+  // ---------- model ----------
   const MODEL = { a: 6.7e-6, b: 6.7e-6, f: 0.05, g: 5 };
   function cost(q, c) {
     q = Math.max(0, q);
@@ -173,93 +152,126 @@
       MODEL.a * q * c + (MODEL.b * q * (q + 1)) / 2 + MODEL.f * q + MODEL.g
     );
   }
-  function saving(q, l) {
-    return Math.max(0, cost(q + l, 0) - cost(q, l));
+  function saving(l) {
+    return Math.max(0, cost(l, 0) - MODEL.g);
+  }
+  const blocks = (v, max, width) =>
+    "█".repeat(Math.max(0, Math.min(width, Math.round((v / max) * width)))) +
+    "░".repeat(Math.max(0, width - Math.round((v / max) * width)));
+
+  // ---------- slide 2: duplicate reading ----------
+  const asciiBurst = $("#asciiBurst");
+  function burstFrame(step) {
+    if (!asciiBurst) return;
+    const n1 = Math.min(20, step);
+    const n2 = Math.min(20, Math.max(0, step - 7));
+    const n3 = Math.min(20, Math.max(0, step - 14));
+    const bar = (n, color) =>
+      `<span class="${color}">[${"█".repeat(n)}${"░".repeat(20 - n)}]</span>`;
+    const hot =
+      n3 >= 20
+        ? '<span class="bad">duplicate</span>'
+        : '<span class="dim">reading</span>';
+    asciiBurst.innerHTML =
+      ` user A ─┐\n` +
+      ` user B ─┼── same document ──▶ <span class="teal">[ Bales ]</span>\n` +
+      ` user C ─┘                         │\n` +
+      `                                   ▼\n` +
+      `                         ┌──────────────────────┐\n` +
+      `                         │ GPU 0                │\n` +
+      `                         │ pass 1 ${bar(n1, "teal")}  ${hot}\n` +
+      `                         │ pass 2 ${bar(n2, "gold")}  ${hot}\n` +
+      `                         │ pass 3 ${bar(n3, "gold")}  ${hot}\n` +
+      `                         └──────────────────────┘`;
   }
 
+  // ---------- slide 3: aim ----------
+  const asciiAim = $("#asciiAim");
+  if (asciiAim) {
+    asciiAim.innerHTML =
+      `       user request\n` +
+      `            │\n` +
+      `            ▼\n` +
+      `        <span class="teal">[ Bales ]</span>\n` +
+      `       ╱         ╲\n` +
+      ` same prompt?     no\n` +
+      `      │            │\n` +
+      `      ▼            ▼\n` +
+      ` <span class="gold">wait or move</span>   <span class="teal">pick the GPU</span>\n` +
+      `                  <span class="teal">that finishes first</span>`;
+  }
+
+  // ---------- slide 6: pipeline ----------
+  const asciiFlow = $("#asciiFlow");
+  const stages = [
+    "1 admit",
+    "2 queue",
+    "3 share",
+    "4 choose",
+    "5 GPU",
+    "6 measure",
+  ];
+  function flowFrame(step) {
+    if (!asciiFlow) return;
+    const active = step % stages.length;
+    const boxes = stages
+      .map((s, i) => {
+        const name = `[${s.padEnd(9)}]`;
+        return i === active
+          ? `<span class="stage on">${name}</span>`
+          : `<span class="stage">${name}</span>`;
+      })
+      .join(" ─▶ ");
+    asciiFlow.innerHTML =
+      ` user\n` +
+      `  │\n` +
+      `  ▼\n` +
+      `${boxes}\n` +
+      `   ▲                                                                  │\n` +
+      `   └──────────────────────────────────────────────────────────────────┘`;
+  }
+
+  // ---------- slide 7: cost ----------
   const qRange = $("#qRange"),
     cRange = $("#cRange");
-  const costChart = $("#costChart");
+  const asciiCost = $("#asciiCost");
   function drawCost() {
+    if (!qRange || !cRange) return;
     const q = Number(qRange.value),
       c = Number(cRange.value);
     $("#qVal").textContent = q.toLocaleString();
     $("#cVal").textContent = c.toLocaleString();
     const warm = cost(q, c),
-      cold = cost(q + c, 0);
-    $("#costOut").textContent = `${warm.toFixed(1)} ms`;
-    $("#coldOut").textContent = `${cold.toFixed(1)} ms`;
-    $("#saveOut").textContent = `${Math.max(0, cold - warm).toFixed(1)} ms`;
+      cold = cost(q + c, 0),
+      saved = Math.max(0, cold - warm);
+    $("#costOut").textContent = `${warm.toFixed(0)} ms`;
+    $("#coldOut").textContent = `${cold.toFixed(0)} ms`;
+    $("#saveOut").textContent = `${saved.toFixed(0)} ms`;
     const work = Math.max(0.001, warm - MODEL.g);
     const attn = (MODEL.a * q * c + (MODEL.b * q * (q + 1)) / 2) / work;
-    $("#attnOut").textContent = `${(Math.min(1, attn) * 100).toFixed(1)}%`;
-
-    clear(costChart);
-    costChart.classList.add("chart");
-    const W = 540,
-      H = 300,
-      left = 46,
-      top = 16,
-      right = 16,
-      bottom = 38;
-    const pw = W - left - right,
-      ph = H - top - bottom;
-    const qMax = 8192,
-      yMax = niceMax(cost(qMax + c, 0));
-    grid(costChart, left, top, pw, ph);
-    for (let i = 0; i <= 5; i++) {
-      const v = (yMax * i) / 5;
-      label(costChart, left - 7, top + ph - (ph * i) / 5 + 3, v.toFixed(0), {
-        anchor: "end",
-      });
-      const qv = (qMax * i) / 5;
-      label(
-        costChart,
-        left + (pw * i) / 5,
-        top + ph + 16,
-        `${(qv / 1000).toFixed(0)}k`,
-        { anchor: "middle" },
-      );
+    $("#attnOut").textContent = `${(Math.min(1, attn) * 100).toFixed(0)}%`;
+    if (asciiCost) {
+      asciiCost.innerHTML =
+        `cold   <span class="cold">[${blocks(cold, cold, 26)}]</span> ${cold.toFixed(0)} ms\n` +
+        `warm   <span class="warm">[${blocks(warm, cold, 26)}]</span> ${warm.toFixed(0)} ms\n` +
+        `saved  <span class="saved">[${blocks(saved, cold, 26)}]</span> ${saved.toFixed(0)} ms\n\n` +
+        `reading ${q.toLocaleString()} new words over ${c.toLocaleString()} shared words\n` +
+        `attention is ${(Math.min(1, attn) * 100).toFixed(0)}% of the warm reading time`;
     }
-    label(costChart, left + pw / 2, H - 4, "new query tokens", {
-      anchor: "middle",
-    });
-    label(costChart, 12, top + ph / 2, "ms", {
-      anchor: "middle",
-      rotate: true,
-    });
-
-    function path(warmLine) {
-      let d = "";
-      for (let x = 0; x <= qMax; x += 128) {
-        const px = left + (pw * x) / qMax;
-        const value = warmLine ? cost(x, c) : cost(x + c, 0);
-        const py = top + ph - (ph * Math.min(yMax, value)) / yMax;
-        d += `${d ? " L" : "M"}${px.toFixed(1)} ${py.toFixed(1)}`;
-      }
-      return d;
-    }
-    mk(costChart, "path", { d: path(false), class: "series gold" });
-    mk(costChart, "path", { d: path(true), class: "series" });
-    const mx = left + (pw * q) / qMax;
-    const my = top + ph - (ph * Math.min(yMax, warm)) / yMax;
-    mk(costChart, "circle", { cx: mx, cy: my, r: 4, fill: "var(--accent)" });
-    label(costChart, mx + 6, my - 6, `${warm.toFixed(0)} ms`, {
-      class: "label",
-    });
   }
-  if (qRange && cRange) {
+  if (qRange) {
     qRange.addEventListener("input", drawCost);
     cRange.addEventListener("input", drawCost);
     drawCost();
   }
 
-  // ---------- hold or spill ----------
+  // ---------- slide 8: hold or move ----------
   const lRange = $("#lRange"),
     tauRange = $("#tauRange"),
     gapRange = $("#gapRange"),
     slackRange = $("#slackRange");
   function drawHold() {
+    if (!lRange) return;
     const L = Number(lRange.value),
       tau = Number(tauRange.value);
     const gap = Number(gapRange.value),
@@ -268,47 +280,47 @@
     $("#tauVal").textContent = tau;
     $("#gapVal").textContent = gap;
     $("#slackVal").textContent = slack;
-    const save = saving(0, L);
+    const saved = saving(L);
     const wait = Math.max(0, tau + gap);
-    const gain = save - wait;
-    const withinSlack = tau <= slack;
-    const withinCap = tau <= 250;
-    const hold = L > 0 && gain > 1 && withinSlack && withinCap;
+    const gain = saved - wait;
+    const hold = L > 0 && gain > 1 && tau <= slack && tau <= 250;
     const badge = $("#holdDecision");
     badge.textContent = hold ? "HOLD" : "SPILL";
     badge.classList.toggle("spill", !hold);
-    let reason = `saving ${save.toFixed(0)} ms, wait ${wait.toFixed(0)} ms`;
-    if (!withinSlack) reason = "leader exceeds request slack";
-    else if (!withinCap) reason = "remaining prefill exceeds the 250 ms cap";
-    else if (L <= 0) reason = "no shared prefix";
-    else if (gain <= 1) reason = "spill is cheaper";
+    let reason = `saved ${saved.toFixed(0)} ms, wait ${wait.toFixed(0)} ms`;
+    if (L <= 0) reason = "no shared prefix";
+    else if (tau > slack) reason = "the leader exceeds the request's patience";
+    else if (tau > 250) reason = "the leader exceeds the 250 ms ceiling";
+    else if (gain <= 1) reason = "moving is cheaper";
     $("#holdReason").textContent = reason;
 
-    const max = Math.max(1, save, wait);
-    $("#saveBar").style.width = `${(save / max) * 100}%`;
+    const max = Math.max(1, saved, wait);
+    $("#saveBar").style.width = `${(saved / max) * 100}%`;
     $("#waitBar").style.width = `${(wait / max) * 100}%`;
-    $("#saveLabel").textContent = save.toFixed(0);
+    $("#saveLabel").textContent = saved.toFixed(0);
     $("#waitLabel").textContent = wait.toFixed(0);
 
-    const leaderFull = Math.max(
-      0,
-      Math.min(20, Math.round(20 * (1 - Math.min(1, tau / 300)))),
-    );
-    const waitFill = Math.max(
-      0,
-      Math.min(20, Math.round(20 * Math.min(1, tau / 300))),
-    );
-    const warm = Math.max(
-      1,
-      Math.min(20, Math.round(20 * Math.min(1, save / 600))),
-    );
-    const leader = "█".repeat(leaderFull) + "░".repeat(20 - leaderFull);
-    const follower = "█".repeat(waitFill) + "░".repeat(20 - waitFill);
-    const warmBar = "█".repeat(warm) + "░".repeat(20 - warm);
-    $("#asciiHold").innerHTML =
-      `leader    prefill  <span class="teal">[${leader}]</span>  τ ${tau} ms\n` +
-      `follower  wait     <span class="gold">[${follower}]</span>\n` +
-      `          warm     <span class="ok">[${warmBar}]</span>  ${save.toFixed(0)} ms saved`;
+    const holdBar =
+      "█".repeat(
+        Math.min(20, Math.max(0, Math.round(20 * Math.min(1, tau / 300)))),
+      ) +
+      "░".repeat(
+        20 - Math.min(20, Math.max(0, Math.round(20 * Math.min(1, tau / 300)))),
+      );
+    const warm =
+      "█".repeat(
+        Math.min(20, Math.max(1, Math.round(20 * Math.min(1, saved / 700)))),
+      ) +
+      "░".repeat(
+        20 -
+          Math.min(20, Math.max(1, Math.round(20 * Math.min(1, saved / 700)))),
+      );
+    if ($("#asciiHold")) {
+      $("#asciiHold").innerHTML =
+        `leader    reading  <span class="teal">[${"█".repeat(20 - Math.min(20, Math.round((tau / 300) * 20)))}${"░".repeat(Math.min(20, Math.round((tau / 300) * 20)))}]</span> ${tau} ms left\n` +
+        `follower  wait     <span class="gold">[${holdBar}]</span>\n` +
+        `          reuse    <span class="ok">[${warm}]</span> saves ${saved.toFixed(0)} ms`;
+    }
   }
   if (lRange) {
     [lRange, tauRange, gapRange, slackRange].forEach((el) =>
@@ -317,11 +329,11 @@
     drawHold();
   }
 
-  // ---------- queue ----------
+  // ---------- slide 9: queue ----------
   const dStream = $("#dStream"),
     dBatch = $("#dBatch"),
     etaRange = $("#etaRange");
-  const queueChart = $("#queueChart");
+  const asciiQueue = $("#asciiQueue");
   const queueJobs = [
     { id: "s1", arrival: 0, stream: true, cost: 120 },
     { id: "b1", arrival: 10, stream: false, cost: 300 },
@@ -331,6 +343,7 @@
     { id: "s4", arrival: 140, stream: true, cost: 100 },
   ];
   function drawQueue() {
+    if (!dStream) return;
     const ds = Number(dStream.value),
       db = Number(dBatch.value),
       eta = Number(etaRange.value);
@@ -342,54 +355,15 @@
       deadline: j.arrival + (j.stream ? ds : db) + eta * j.cost,
     }));
     jobs.sort((a, b) => a.deadline - b.deadline || a.arrival - b.arrival);
-    const maxD = Math.max(...jobs.map((j) => j.deadline), 1000) * 1.08;
-    clear(queueChart);
-    queueChart.classList.add("chart");
-    const W = 540,
-      H = 260,
-      left = 46,
-      top = 20,
-      right = 16,
-      bottom = 40;
-    const pw = W - left - right,
-      ph = H - top - bottom;
-    grid(queueChart, left, top, pw, ph, 4);
-    for (let i = 0; i <= 4; i++) {
-      label(
-        queueChart,
-        left + (pw * i) / 4,
-        top + ph + 16,
-        `${((maxD * i) / 4 / 1000).toFixed(1)}s`,
-        { anchor: "middle" },
-      );
+    const maxD = Math.max(...jobs.map((j) => j.deadline), 1000);
+    if (asciiQueue) {
+      const lines = jobs.map((j) => {
+        const width = Math.max(1, Math.round((j.deadline / maxD) * 28));
+        const bar = "█".repeat(width) + "░".repeat(28 - width);
+        return `${j.stream ? "chat " : "batch"} ${j.id} [${j.stream ? `<span class="stream">${bar}</span>` : `<span class="batch">${bar}</span>`}] ${j.deadline.toFixed(0)} ms`;
+      });
+      asciiQueue.innerHTML = `0 ms ─────────────────────────────────▶ ${maxD.toFixed(0)} ms\n\n${lines.join("\n")}`;
     }
-    label(queueChart, left + pw / 2, H - 5, "virtual deadline", {
-      anchor: "middle",
-    });
-    const rowH = ph / jobs.length;
-    jobs.forEach((j, i) => {
-      const y = top + i * rowH + rowH / 2;
-      label(queueChart, left - 6, y + 4, j.id, {
-        anchor: "end",
-        class: "label",
-      });
-      mk(queueChart, "line", {
-        x1: left,
-        y1: y,
-        x2: left + pw,
-        y2: y,
-        class: "grid",
-      });
-      mk(queueChart, "rect", {
-        x: left + (j.arrival / maxD) * pw,
-        y: y - 6,
-        width: Math.max(2, ((j.deadline - j.arrival) / maxD) * pw),
-        height: 12,
-        rx: 3,
-        fill: j.stream ? "var(--accent)" : "var(--gold)",
-        opacity: j.stream ? 0.85 : 0.9,
-      });
-    });
     $("#queueOrder").innerHTML = jobs
       .map(
         (j, i) =>
@@ -404,102 +378,104 @@
     drawQueue();
   }
 
-  // ---------- ECT ----------
-  const ectReplicas = [
+  // ---------- slide 10: ECT ----------
+  const replicas = [
     { id: 0, cached: 4096, wait: 500, inflight: 1, kv: 72 },
     { id: 1, cached: 0, wait: 40, inflight: 0, kv: 34 },
     { id: 2, cached: 2048, wait: 10, inflight: 0, kv: 55 },
     { id: 3, cached: 0, wait: 300, inflight: 2, kv: 96 },
   ];
-  const ectRequest = { q: 4600, out: 64 };
-  let ectPolicy = "ect";
-  function ectScores() {
-    return ectReplicas.map((r) => {
-      const uncached = Math.max(0, ectRequest.q - r.cached);
-      const prefill = cost(uncached, r.cached);
-      const score =
-        r.wait +
-        prefill +
-        2 * r.inflight +
-        0.5 * (8 + 0.02 * Math.min(uncached, 512) - 8);
-      const tokens = uncached + ectRequest.out;
-      return { ...r, uncached, prefill, score, tokens };
-    });
-  }
+  let policy = "ect";
   function renderECT() {
-    const scores = ectScores();
-    let winner = 0;
-    let reason = "";
-    if (ectPolicy === "rr") {
-      winner = 0;
-      reason = "Round robin takes the next replica in rotation.";
-    } else if (ectPolicy === "tokens") {
-      winner = scores.reduce(
-        (best, r, i) => (r.tokens < scores[best].tokens ? i : best),
+    const ascii = $("#asciiEct");
+    if (!ascii) return;
+    const q = 4600,
+      out = 64;
+    const rows = replicas.map((r) => {
+      const uncached = Math.max(0, q - r.cached);
+      const prefill = cost(uncached, r.cached);
+      const score = r.wait + prefill + 2 * r.inflight + 5;
+      return { ...r, uncached, prefill, score, tokens: uncached + out };
+    });
+    let winner;
+    let header = "score";
+    let reason;
+    if (policy === "tokens") {
+      winner = rows.reduce(
+        (best, r, i) => (r.tokens < rows[best].tokens ? i : best),
         0,
       );
-      reason = "Least tokens counts uncached prompt plus predicted output.";
+      header = "tokens";
+      reason =
+        "Least tokens chooses GPU 0: it counts uncached tokens and ignores the queue.";
     } else {
       let best = Infinity;
-      scores.forEach((r, i) => {
+      winner = 0;
+      rows.forEach((r, i) => {
         if (r.kv >= 90) return;
         if (r.score < best) {
           best = r.score;
           winner = i;
         }
       });
-      reason = `ECT chooses replica ${winner}: queue wait plus calibrated prefill under KV and ITL guards.`;
+      reason =
+        "ECT chooses GPU 2: a short queue beats the larger cache on GPU 0.";
     }
-    const grid = $("#replicaGrid");
-    grid.innerHTML = scores
-      .map((r, i) => {
-        const skip = ectPolicy === "ect" && r.kv >= 90;
-        const shown =
-          ectPolicy === "tokens"
-            ? `${r.tokens} tok`
-            : ectPolicy === "rr"
-              ? "rotation"
-              : `${r.score.toFixed(0)} ms`;
-        return `<div class="replica-card ${i === winner && !skip ? "win" : ""} ${skip ? "skip" : ""}">
-        <div class="rid">replica ${r.id}</div>
-        <div class="score">${skip ? "guard" : shown}</div>
-        <dl>
-          <div><span>cached</span><b>${r.cached}</b></div>
-          <div><span>queue</span><b>${r.wait} ms</b></div>
-          <div><span>inflight</span><b>${r.inflight}</b></div>
-          <div><span>KV</span><b>${r.kv}%</b></div>
-        </dl>
-      </div>`;
-      })
-      .join("");
+    const lines = [`replica   cache       queue     ${header}`];
+    rows.forEach((r, i) => {
+      const cache = blocks(r.cached, 4096, 8);
+      const skip = policy === "ect" && r.kv >= 90;
+      const value = skip
+        ? "skipped: KV 96%"
+        : `${(policy === "tokens" ? r.tokens : r.score).toFixed(0)}${policy === "tokens" ? "" : " ms"}`;
+      const mark = i === winner && !skip ? "  ◀ pick" : "";
+      lines.push(
+        `GPU ${r.id}     ${cache}  ${String(r.wait).padStart(4)} ms   ${value}${mark}`,
+      );
+    });
+    lines.push("");
+    lines.push(`request: ${q.toLocaleString()} tokens, ${out} output tokens`);
+    ascii.innerHTML = lines
+      .map((l) => (l.includes("◀ pick") ? `<span class="pick">${l}</span>` : l))
+      .join("\n");
     $("#ectReason").textContent = reason;
   }
   $$(".policy-toggle button").forEach((button) => {
     button.addEventListener("click", () => {
-      ectPolicy = button.dataset.policy;
+      policy = button.dataset.policy;
       $$(".policy-toggle button").forEach((b) =>
         b.classList.toggle("on", b === button),
       );
       renderECT();
     });
   });
-  if ($("#replicaGrid")) renderECT();
+  if ($("#asciiEct")) renderECT();
 
-  // ---------- affinity gate ----------
+  // ---------- slide 11: affinity ----------
   const rateRange = $("#rateRange"),
     prefixRange = $("#prefixRange");
   function drawGate() {
+    if (!rateRange) return;
     const rate = Number(rateRange.value),
       prefix = Number(prefixRange.value);
     $("#rateVal").textContent = rate;
     $("#prefixVal").textContent = prefix.toLocaleString();
-    const recoverable = rate * saving(0, prefix);
+    const recoverable = rate * saving(prefix);
     const threshold = 0.15 * 1000 * 4;
     let action = "SPREAD";
     let count = 0;
+    let loads = [25, 25, 25, 25];
     if (recoverable >= threshold) {
       count = Math.max(1, Math.min(4, Math.ceil(recoverable / 800)));
-      action = count <= 1 ? "PIN" : "REPLICATE";
+      if (count <= 1) {
+        action = "PIN";
+        loads = [90, 5, 5, 5];
+      } else {
+        action = "REPLICATE";
+        if (count === 2) loads = [45, 45, 5, 5];
+        else if (count === 3) loads = [32, 32, 32, 4];
+        else loads = [25, 25, 25, 25];
+      }
     }
     const badge = $("#gateDecision");
     badge.textContent = action;
@@ -507,9 +483,22 @@
     $("#gateReason").textContent =
       action === "SPREAD"
         ? `recoverable ${recoverable.toFixed(0)} ms/s is below the ${threshold.toFixed(0)} ms/s threshold`
-        : `${count} replica${count === 1 ? "" : "s"} · recoverable ${recoverable.toFixed(0)} ms/s · threshold ${threshold.toFixed(0)} ms/s`;
-    $("#gateFill").style.width =
-      `${Math.min(100, (recoverable / (threshold * 1.6)) * 100)}%`;
+        : `${count} replica${count === 1 ? "" : "s"} · recoverable ${recoverable.toFixed(0)} ms/s`;
+    if ($("#asciiGate")) {
+      const lines = ["GPU   load"];
+      loads.forEach((load, i) => {
+        lines.push(
+          `GPU ${i} ${"█".repeat(Math.round(load / 5)).padEnd(20)} ${load}%`,
+        );
+      });
+      lines.push("");
+      lines.push(
+        action === "SPREAD"
+          ? "traffic spread across all GPUs"
+          : `${action.toLowerCase()} the hot group`,
+      );
+      $("#asciiGate").innerHTML = lines.join("\n");
+    }
   }
   if (rateRange) {
     [rateRange, prefixRange].forEach((el) =>
@@ -518,334 +507,201 @@
     drawGate();
   }
 
-  // ---------- burst results ----------
-  const burstData = {
-    p50: [504.6, 1957.6, 509.1, 142.5],
-    prefill: [3886.6, 3886.6, 3886.6, 509.4],
-    dup: [96.9, 96.9, 96.9, 66.7],
-  };
-  const burstLabels = ["round robin", "llmd style", "ECT", "ECT + coalesce"];
-  const burstColors = [
-    "var(--muted)",
-    "var(--gold)",
-    "var(--accent)",
-    "var(--good)",
-  ];
-  let burstMetric = "p50";
-  function drawBurst() {
-    const svg = $("#burstChart");
+  // ---------- slide 14: compact results ----------
+  function drawBurstMini() {
+    const svg = $("#burstMini");
     if (!svg) return;
-    const values = burstData[burstMetric];
-    const unit = burstMetric === "dup" ? "%" : "ms";
-    const yMax = niceMax(Math.max(...values) * 1.12);
     clear(svg);
     svg.classList.add("chart");
-    const W = 720,
-      H = 360,
-      left = 56,
-      top = 18,
-      right = 18,
-      bottom = 62;
+    const W = 360,
+      H = 220,
+      left = 34,
+      top = 14,
+      right = 8,
+      bottom = 34;
     const pw = W - left - right,
       ph = H - top - bottom;
-    grid(svg, left, top, pw, ph, 5);
-    for (let i = 0; i <= 5; i++) {
-      label(
-        svg,
-        left - 8,
-        top + ph - (ph * i) / 5 + 3,
-        `${((yMax * i) / 5).toFixed(0)}`,
-        { anchor: "end" },
-      );
-    }
-    const bw = pw / values.length;
-    values.forEach((v, i) => {
+    const vals = [504.6, 509.1, 142.5];
+    const names = ["RR", "ECT", "share"];
+    const yMax = 600;
+    grid(svg, left, top, pw, ph, 4);
+    for (let i = 0; i <= 4; i++)
+      label(svg, left - 5, top + ph - (ph * i) / 4 + 3, `${(yMax * i) / 4}`, {
+        anchor: "end",
+        size: 8,
+      });
+    const bw = pw / 3;
+    vals.forEach((v, i) => {
       const bh = (v / yMax) * ph;
-      const x = left + i * bw + bw * 0.22;
-      const w = bw * 0.56;
-      const rect = mk(svg, "rect", {
-        x,
+      mk(svg, "rect", {
+        x: left + i * bw + bw * 0.2,
         y: top + ph - bh,
-        width: w,
+        width: bw * 0.6,
         height: bh,
-        rx: 4,
-        fill: burstColors[i],
+        rx: 3,
+        fill: i === 2 ? "var(--accent)" : "var(--muted)",
       });
-      const title = document.createElementNS(NS, "title");
-      title.textContent = `${burstLabels[i]}: ${v}${unit}`;
-      rect.appendChild(title);
-      label(svg, x + w / 2, top + ph - bh - 8, `${v.toFixed(1)}${unit}`, {
+      label(svg, left + i * bw + bw / 2, top + ph - bh - 5, `${v}`, {
         anchor: "middle",
-        class: "label",
+        size: 8,
+        fill: "var(--ink)",
       });
-      label(svg, x + w / 2, top + ph + 20, burstLabels[i], {
+      label(svg, left + i * bw + bw / 2, top + ph + 14, names[i], {
         anchor: "middle",
+        size: 8,
       });
     });
-    label(
-      svg,
-      left + pw / 2,
-      H - 6,
-      burstMetric === "dup"
-        ? "duplicate prefill ratio"
-        : burstMetric === "prefill"
-          ? "prefill work"
-          : "time to first token",
-      { anchor: "middle" },
-    );
+    label(svg, left + pw / 2, H - 2, "P50 TTFT (ms)", {
+      anchor: "middle",
+      size: 8,
+    });
   }
-  $$(".metric-toggle button").forEach((button) => {
-    button.addEventListener("click", () => {
-      burstMetric = button.dataset.metric;
-      $$(".metric-toggle button").forEach((b) =>
-        b.classList.toggle("on", b === button),
-      );
-      drawBurst();
-    });
-  });
-  if ($("#burstChart")) drawBurst();
-
-  // ---------- tradeoff and long context ----------
-  const tradeData = {
-    5: {
-      fifo: [1535.4, 1224.0],
-      strict: [563.7, 1423.6],
-      edf: [1187.2, 1239.6],
-    },
-    8: {
-      fifo: [5024.9, 4648.9],
-      strict: [562.2, 5108.8],
-      edf: [4661.9, 4893.1],
-    },
-    11: {
-      fifo: [9584.0, 8837.0],
-      strict: [614.6, 11156.1],
-      edf: [8641.0, 9061.9],
-    },
-    14: {
-      fifo: [22772.2, 22050.8],
-      strict: [620.5, 22257.9],
-      edf: [20553.9, 22257.9],
-    },
-  };
-  const tradeColors = {
-    fifo: "var(--muted)",
-    strict: "var(--bad)",
-    edf: "var(--accent)",
-  };
-  const tradeNames = { fifo: "FIFO", strict: "strict", edf: "EDF 0.8s" };
-  function drawTrade() {
-    const svg = $("#tradeChart");
-    const rate = $("#rateSelect").value;
-    const data = tradeData[rate];
-    const maxX = niceMax(
-      Math.max(...Object.values(data).map((v) => v[0])) * 1.12,
-    );
-    const maxY = niceMax(
-      Math.max(...Object.values(data).map((v) => v[1])) * 1.12,
-    );
+  function drawQueueMini() {
+    const svg = $("#queueMini");
+    if (!svg) return;
     clear(svg);
     svg.classList.add("chart");
-    const W = 520,
-      H = 280,
-      left = 54,
-      top = 18,
-      right = 18,
-      bottom = 46;
+    const W = 360,
+      H = 220,
+      left = 38,
+      top = 14,
+      right = 8,
+      bottom = 34;
     const pw = W - left - right,
       ph = H - top - bottom;
+    const pts = [
+      { name: "FIFO", x: 5025, y: 4649, c: "var(--muted)" },
+      { name: "strict", x: 562, y: 5109, c: "var(--bad)" },
+      { name: "EDF .8", x: 4662, y: 4893, c: "var(--accent)" },
+    ];
+    const maxX = 6000,
+      maxY = 6000;
     grid(svg, left, top, pw, ph, 4);
     for (let i = 0; i <= 4; i++) {
       label(
         svg,
-        left - 7,
+        left - 5,
         top + ph - (ph * i) / 4 + 3,
-        `${((maxY * i) / 4 / 1000).toFixed(1)}s`,
-        { anchor: "end" },
+        `${(maxY * i) / 4 / 1000}s`,
+        { anchor: "end", size: 8 },
       );
       label(
         svg,
         left + (pw * i) / 4,
-        top + ph + 16,
-        `${((maxX * i) / 4 / 1000).toFixed(1)}s`,
-        { anchor: "middle" },
+        top + ph + 14,
+        `${(maxX * i) / 4 / 1000}s`,
+        { anchor: "middle", size: 8 },
       );
     }
-    label(svg, left + pw / 2, H - 5, "stream P99 TTFT", { anchor: "middle" });
-    label(svg, 12, top + ph / 2, "batch P99 wait", {
-      anchor: "middle",
-      rotate: true,
+    const offsets = { FIFO: [6, -8], strict: [6, 3], "EDF .8": [-40, 2] };
+    pts.forEach((p) => {
+      const x = left + (p.x / maxX) * pw,
+        y = top + ph - (p.y / maxY) * ph;
+      mk(svg, "circle", { cx: x, cy: y, r: 4, fill: p.c });
+      const off = offsets[p.name] || [6, 3];
+      label(svg, x + off[0], y + off[1], p.name, { size: 8, fill: p.c });
     });
-    for (const [key, value] of Object.entries(data)) {
-      const x = left + (value[0] / maxX) * pw;
-      const y = top + ph - (value[1] / maxY) * ph;
-      const circle = mk(svg, "circle", {
-        cx: x,
-        cy: y,
-        r: 6,
-        fill: tradeColors[key],
-      });
-      const title = document.createElementNS(NS, "title");
-      title.textContent = `${tradeNames[key]} at ${rate} req/s: stream ${value[0]} ms, batch ${value[1]} ms`;
-      circle.appendChild(title);
-      const offsets = { fifo: [9, -10], strict: [9, 4], edf: [-55, 4] };
-      const off = offsets[key] || [9, 4];
-      label(svg, x + off[0], y + off[1], tradeNames[key], {
-        fill: tradeColors[key],
-        size: 10,
-      });
-    }
-    $("#tradeLegend").innerHTML = Object.keys(data)
-      .map(
-        (key) =>
-          `<span><span class="dot" style="background:${tradeColors[key]}"></span>${tradeNames[key]}</span>`,
-      )
-      .join("");
+    label(svg, left + pw / 2, H - 2, "stream P99 vs batch P99", {
+      anchor: "middle",
+      size: 8,
+    });
   }
-  const longData = [
-    { label: "least tokens", six: 3036.1, ten: 3847.3, color: "var(--muted)" },
-    { label: "Bales ECT", six: 1209.2, ten: 1318.7, color: "var(--accent)" },
-  ];
-  function drawLong() {
-    const svg = $("#longChart");
+  function drawLongMini() {
+    const svg = $("#longMini");
     if (!svg) return;
     clear(svg);
     svg.classList.add("chart");
-    const W = 520,
-      H = 280,
-      left = 54,
-      top = 18,
-      right = 16,
-      bottom = 52;
+    const W = 360,
+      H = 220,
+      left = 34,
+      top = 14,
+      right = 8,
+      bottom = 34;
     const pw = W - left - right,
       ph = H - top - bottom;
     const yMax = 4200;
     grid(svg, left, top, pw, ph, 4);
-    for (let i = 0; i <= 4; i++) {
-      label(
-        svg,
-        left - 7,
-        top + ph - (ph * i) / 4 + 3,
-        `${((yMax * i) / 4).toFixed(0)}`,
-        { anchor: "end" },
-      );
-    }
-    const groups = ["6 req/s", "10 req/s"];
+    for (let i = 0; i <= 4; i++)
+      label(svg, left - 5, top + ph - (ph * i) / 4 + 3, `${(yMax * i) / 4}`, {
+        anchor: "end",
+        size: 8,
+      });
+    const groups = [
+      { name: "6/s", least: 3036, ect: 1209 },
+      { name: "10/s", least: 3847, ect: 1319 },
+    ];
     const bw = pw / 2;
-    groups.forEach((group, gi) => {
-      longData.forEach((series, si) => {
-        const value = gi === 0 ? series.six : series.ten;
-        const barW = bw * 0.22;
-        const x = left + gi * bw + bw * 0.24 + si * barW * 1.25;
+    groups.forEach((g, gi) => {
+      [
+        ["least", g.least, "var(--muted)"],
+        ["ECT", g.ect, "var(--accent)"],
+      ].forEach(([name, value, color], si) => {
+        const barW = bw * 0.2;
+        const x = left + gi * bw + bw * 0.22 + si * barW * 1.4;
         const bh = (value / yMax) * ph;
-        const rect = mk(svg, "rect", {
+        mk(svg, "rect", {
           x,
           y: top + ph - bh,
           width: barW,
           height: bh,
           rx: 3,
-          fill: series.color,
+          fill: color,
         });
-        const title = document.createElementNS(NS, "title");
-        title.textContent = `${series.label} ${group}: ${value} ms`;
-        rect.appendChild(title);
-        label(svg, x + barW / 2, top + ph - bh - 6, `${value.toFixed(0)}`, {
+        label(svg, x + barW / 2, top + ph - bh - 5, `${value}`, {
           anchor: "middle",
-          size: 9,
+          size: 8,
+          fill: "var(--ink)",
         });
       });
-      label(svg, left + gi * bw + bw / 2, top + ph + 18, group, {
+      label(svg, left + gi * bw + bw / 2, top + ph + 14, g.name, {
         anchor: "middle",
+        size: 8,
       });
     });
-    label(svg, left + pw / 2, H - 6, "P99 TTFT (ms)", { anchor: "middle" });
-  }
-  if ($("#rateSelect")) {
-    $("#rateSelect").addEventListener("change", drawTrade);
-    drawTrade();
-    drawLong();
-  }
-
-  // ---------- tabs ----------
-  $$(".tab-buttons button").forEach((button) => {
-    button.addEventListener("click", () => {
-      const name = button.dataset.tab;
-      $$(".tab-buttons button").forEach((b) =>
-        b.classList.toggle("on", b === button),
-      );
-      $$(".tab-panel").forEach((panel) =>
-        panel.classList.toggle("on", panel.dataset.panel === name),
-      );
+    label(svg, left + pw / 2, H - 2, "P99 TTFT (ms)", {
+      anchor: "middle",
+      size: 8,
     });
-  });
+  }
+  if ($("#burstMini")) {
+    drawBurstMini();
+    drawQueueMini();
+    drawLongMini();
+  }
 
-  // ---------- ascii animations ----------
-  const asciiBurst = $("#asciiBurst");
-  function burstFrame(step) {
-    const cycle = step % 36;
-    const n = Math.min(20, cycle);
-    const bar = "█".repeat(n) + "░".repeat(20 - n);
-    const status =
-      cycle >= 20
-        ? '<span class="bad">duplicate prefill</span>'
-        : '<span class="dim">prefilling…</span>';
-    asciiBurst.innerHTML =
-      ` prompt <span class="teal">"explain prefix caching ..."</span>\n` +
-      `        │\n` +
-      `   ┌────┴─────┐\n` +
-      `   ▼          ▼\n` +
-      ` GPU 0       GPU 1\n` +
-      ` <span class="teal">[${bar}]</span>  <span class="gold">[${bar}]</span>\n` +
-      ` 2048 tok    2048 tok   ${status}\n` +
-      `        ╲        ╱\n` +
-      `         ╲      ╱\n` +
-      `       <span class="bad">same KV built twice</span>`;
-  }
-  const asciiPipe = $("#asciiPipe");
-  function pipeFrame(step) {
-    const names = ["client", "admit", "queue", "coalesce", "ECT", "GPU"];
-    const padded = names.map((n) => n.padEnd(8));
-    const active = step % names.length;
-    const line = padded
-      .map((n, i) =>
-        i === active
-          ? `<span class="on">[${n}]</span>`
-          : `<span class="dim">[${n}]</span>`,
-      )
-      .join(" ─▶ ");
-    const pos =
-      padded.slice(0, active).reduce((acc, n) => acc + n.length + 4, 0) + 2;
-    asciiPipe.innerHTML = `${line}\n${" ".repeat(pos)}<span class="teal">▲</span>`;
-  }
+  // ---------- animation control ----------
   function startSlideAnimations(index) {
     if (burstTimer) {
       clearInterval(burstTimer);
       burstTimer = null;
     }
-    if (pipeTimer) {
-      clearInterval(pipeTimer);
-      pipeTimer = null;
+    if (flowTimer) {
+      clearInterval(flowTimer);
+      flowTimer = null;
     }
+    const reduce =
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (index === 1 && asciiBurst) {
       let step = 0;
-      burstFrame(step);
-      burstTimer = setInterval(() => {
-        step++;
-        if (step > 40) step = 0;
-        burstFrame(step);
-      }, 110);
+      burstFrame(reduce ? 30 : 0);
+      if (!reduce)
+        burstTimer = setInterval(() => {
+          step = step >= 34 ? 0 : step + 1;
+          burstFrame(step);
+        }, 110);
     }
-    if (index === 4 && asciiPipe) {
+    if (index === 5 && asciiFlow) {
       let step = 0;
-      pipeFrame(step);
-      pipeTimer = setInterval(() => {
-        step++;
-        pipeFrame(step);
-      }, 650);
+      flowFrame(0);
+      if (!reduce)
+        flowTimer = setInterval(() => {
+          step++;
+          flowFrame(step);
+        }, 650);
     }
   }
 
-  // ---------- boot ----------
   goTo(initialSlide(), false);
   window.addEventListener("hashchange", () => goTo(initialSlide(), false));
 })();

@@ -13,10 +13,6 @@
     <span class="brand-name">Bales</span>
     <span class="brand-tag">proto</span>
   </div>
-  <div class="tools">
-    <span class="hint">arrow keys to navigate</span>
-    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">Dark</button>
-  </div>
 </header>
 <div class="progress"><span id="progressBar"></span></div>
 
@@ -27,14 +23,13 @@
     <div class="hero-copy">
       <div class="eyebrow">Prototype review · November 2026</div>
       <h1>Bales</h1>
-      <p class="subtitle">A cost-aware gateway for mixed LLM traffic.</p>
-      <p class="lead">Bales sees a prefix before the engine does. It decides whether a duplicate request should wait for an in-flight prefill or move to a spare GPU, prices the cache hit in milliseconds, and keeps stream and batch traffic on separate virtual deadlines.</p>
+      <p class="subtitle">A dispatcher for mixed LLM traffic.</p>
+      <p class="lead">Bales sits between users and model servers. It notices when two requests share a prompt, decides whether one should wait for the other, and chooses the GPU that can finish first.</p>
       <div class="chips">
-        <span>prefix coalescing</span>
-        <span>calibrated prefill cost</span>
-        <span>virtual deadlines</span>
+        <span>share the reading</span>
+        <span>price the cache hit</span>
+        <span>separate chat and batch</span>
       </div>
-      <p class="small">Arrow keys navigate and <kbd>T</kbd> switches the theme. Every number comes from the checked-in evidence ledger.</p>
     </div>
     <div class="hero-mark">
       <img src="assets/logo.png" alt="Bales logo">
@@ -46,357 +41,304 @@
 <section class="slide" id="slide-2" data-title="Problem">
   <div class="inner">
     <div class="eyebrow">01 · The problem</div>
-    <h2>Duplicate prefill in a cold burst</h2>
+    <h2>The same prompt, read again and again</h2>
     <div class="cols two-one">
       <div>
-        <p class="lead">A cold burst arrives before the first prefill finishes. A router with speculative indexing records the cache entry at dispatch, so every follower believes the prefix is ready and piles onto the same replica.</p>
-        <ul class="points">
-          <li>The engine schedules the duplicates into the same prefill batch and recomputes the same 2k tokens.</li>
-          <li>Follower TTFT grows with the number of copies, while useful work stays constant.</li>
-          <li>The burst itself gains nothing from prefix caching.</li>
-        </ul>
+        <p class="lead">Before a model can answer, it has to read the whole prompt. That reading step is slow, and it is the same work every time the same document appears.</p>
+        <p>When many users send one long document at once, a gateway can record a cache entry as soon as it sends the first request. Later requests then believe the document is already in memory and follow the same path. The GPU reads it again, and again, while the users wait.</p>
+        <div class="note-grid">
+          <div>
+            <h3>What goes wrong</h3>
+            <ul class="points">
+              <li>Copies arrive before the first reading finishes.</li>
+              <li>The router sends followers to the same busy GPU.</li>
+              <li>The reading work is repeated, but no answer comes faster.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Why it matters</h3>
+            <ul class="points">
+              <li>First answers get slower during bursts.</li>
+              <li>GPU time is spent on duplicate work.</li>
+              <li>The bill rises without a better result.</li>
+            </ul>
+          </div>
+        </div>
       </div>
       <div class="ascii-card">
-        <div class="card-label">same prompt · two replicas</div>
-        <pre class="ascii" id="asciiBurst" aria-label="Animated ASCII diagram of duplicate prefill"></pre>
-        <div class="ascii-foot"><span id="dupLabel">duplicate prefill</span><span class="warn-dot"></span></div>
+        <div class="card-label">three users, one document</div>
+        <pre class="ascii" id="asciiBurst" aria-label="Animated ASCII diagram of duplicate reading"></pre>
+        <div class="ascii-foot"><span id="dupLabel">duplicate reading</span><span class="warn-dot"></span></div>
       </div>
     </div>
     <div class="stat-strip">
-      <div><b>32</b><span>requests in the burst</span></div>
-      <div><b>2048</b><span>shared prompt tokens</span></div>
-      <div><b>3.9 s</b><span>simulated prefill work without coalescing</span></div>
+      <div><b>32</b><span>requests in one burst</span></div>
+      <div><b>2,000</b><span>shared words in the prompt</span></div>
+      <div><b>87%</b><span>less repeated reading in the simulation</span></div>
     </div>
   </div>
 </section>
 
-<section class="slide" id="slide-3" data-title="Prefill cost">
+<section class="slide" id="slide-3" data-title="Aim">
   <div class="inner">
-    <div class="eyebrow">02 · Why it costs</div>
-    <h2>Prefill cost and cache value</h2>
-    <div class="cols two-one">
-      <div>
-        <p class="lead">Prompt tokens run through every transformer layer before the first output token appears. Attention pairs grow with the product of new tokens and cached context, so a long prefix is worth more than a short one to the request that reuses it.</p>
-        <p>Decode is a different regime: one token per step per request, limited by memory bandwidth. A scheduler that treats both phases as one latency number makes the wrong trade.</p>
-        <div class="callout">
-          <span class="callout-tag">Identity</span>
-          For a cached prefix of length L, the avoided work is the prefill cost of L. The value of a hit is superlinear in L.
-        </div>
-      </div>
-      <div class="bars-card">
-        <div class="card-label">simulated burst prefill</div>
-        <div class="big-bar-row"><span>round robin</span><div class="big-bar"><i style="--w:100%"></i></div><b>3886 ms</b></div>
-        <div class="big-bar-row"><span>coalesced</span><div class="big-bar"><i class="teal" style="--w:13%"></i></div><b>509 ms</b></div>
-        <div class="big-note">87% less prefill work for the same 32 requests.</div>
-      </div>
+    <div class="eyebrow">02 · The aim</div>
+    <h2>Three decisions before a request is sent</h2>
+    <p class="lead">Bales is a dispatcher. It does not run the model. It makes the scheduling decisions that the model server cannot see.</p>
+    <div class="cards three aim-cards">
+      <div class="card"><span class="num">01</span><h3>Can we share the reading?</h3><p>If another request is already reading the same prompt, wait only when the saved work is worth the wait. Otherwise send the request to another GPU.</p></div>
+      <div class="card"><span class="num">02</span><h3>Which GPU finishes first?</h3><p>Compare queue length, cached text, and the cost of reading the missing part. Keep the answer in milliseconds.</p></div>
+      <div class="card"><span class="num">03</span><h3>Who goes first?</h3><p>Give chat a short deadline and batch work a long one. Cap the waiting room so the wait stays finite.</p></div>
     </div>
+    <pre class="ascii aim-flow" id="asciiAim" aria-label="Animated request path"></pre>
+    <p class="small">How: build the gateway, test it against mock servers, and use a trace-driven simulator before spending GPU time.</p>
   </div>
 </section>
 
-<section class="slide" id="slide-4" data-title="Prior art">
+<section class="slide" id="slide-4" data-title="Literature">
   <div class="inner">
-    <div class="eyebrow">03 · Prior art</div>
-    <h2>Prior art and the open gap</h2>
-    <table class="matrix">
-      <thead><tr><th>System</th><th>Prefix routing</th><th>In-flight wait</th><th>Calibrated hit value</th><th>Open gateway</th></tr></thead>
+    <div class="eyebrow">03 · Literature survey</div>
+    <h2>What recent systems already do</h2>
+    <div class="lit-grid">
+      <div class="lit-card"><b>Mooncake</b><span>KV-centric serving, cache placement</span><em>serving</em></div>
+      <div class="lit-card"><b>DOPD</b><span>SLO-aware scheduling for LLM serving</span><em>scheduling</em></div>
+      <div class="lit-card"><b>SLAI</b><span>Optimal scheduling theory for inference</span><em>theory</em></div>
+      <div class="lit-card"><b>BrownoutServe</b><span>Overload control under pressure</span><em>overload</em></div>
+      <div class="lit-card"><b>FairCache</b><span>Cache-induced unfairness across tenants</span><em>fairness</em></div>
+      <div class="lit-card"><b>Early Bird</b><span>Timing side channels in LLM serving</span><em>security</em></div>
+      <div class="lit-card"><b>PEEK</b><span>Pending-queue prefix scheduling in one engine</span><em>engine</em></div>
+      <div class="lit-card"><b>CacheRoute</b><span>Planned prefix affinity at cluster scale</span><em>routing</em></div>
+      <div class="lit-card"><b>DualMap</b><span>Two-hash, prefix-aware replica choice</span><em>routing</em></div>
+      <div class="lit-card"><b>Preble</b><span>Explore and exploit prefix placement</span><em>routing</em></div>
+      <div class="lit-card"><b>llm-d</b><span>Speculative indexing in a production router</span><em>gateway</em></div>
+      <div class="lit-card"><b>Dynamo</b><span>KV router with an approximate mode</span><em>gateway</em></div>
+      <div class="lit-card"><b>SGLang #48963</b><span>Duplicate prefill inside one batch</span><em>evidence</em></div>
+      <div class="lit-card"><b>DeepInfer</b><span>Fitted quadratic prefill cost</span><em>cost</em></div>
+      <div class="lit-card"><b>Cloudflare</b><span>Application-level leader and follower wait</span><em>precedent</em></div>
+    </div>
+    <p class="small">Routing is well covered. Engine caching is well covered. The gap is a gateway-level combination of in-flight sharing, a calibrated price, and a bounded wait.</p>
+  </div>
+</section>
+
+<section class="slide" id="slide-5" data-title="Comparison">
+  <div class="inner">
+    <div class="eyebrow">04 · Existing frameworks</div>
+    <h2>Where the closest systems stop</h2>
+    <table class="matrix compare-table">
+      <thead><tr><th>System</th><th>Prefix routing</th><th>In-flight wait</th><th>Cost-aware hit</th><th>Bounded waiting</th><th>Open gateway</th></tr></thead>
       <tbody>
-        <tr><td>llm-d</td><td><span class="pill yes">yes</span></td><td><span class="pill no">no</span></td><td><span class="pill part">partial</span></td><td><span class="pill part">partial</span></td></tr>
-        <tr><td>Dynamo</td><td><span class="pill yes">yes</span></td><td><span class="pill no">no</span></td><td><span class="pill part">partial</span></td><td><span class="pill part">partial</span></td></tr>
-        <tr><td>PEEK</td><td><span class="pill yes">yes</span></td><td><span class="pill yes">engine</span></td><td><span class="pill no">no</span></td><td><span class="pill yes">research</span></td></tr>
-        <tr><td>CacheRoute</td><td><span class="pill yes">yes</span></td><td><span class="pill no">no</span></td><td><span class="pill part">partial</span></td><td><span class="pill part">partial</span></td></tr>
-        <tr><td>DualMap</td><td><span class="pill yes">yes</span></td><td><span class="pill no">no</span></td><td><span class="pill no">no</span></td><td><span class="pill yes">simulator</span></td></tr>
-        <tr class="target"><td>Bales target</td><td><span class="pill yes">yes</span></td><td><span class="pill yes">gateway</span></td><td><span class="pill yes">fitted</span></td><td><span class="pill yes">open</span></td></tr>
+        <tr><td>llm-d</td><td><span class="pill yes">yes</span></td><td><span class="pill no">no</span></td><td><span class="pill part">partial</span></td><td><span class="pill part">partial</span></td><td><span class="pill part">partial</span></td></tr>
+        <tr><td>Dynamo</td><td><span class="pill yes">yes</span></td><td><span class="pill no">no</span></td><td><span class="pill part">partial</span></td><td><span class="pill part">partial</span></td><td><span class="pill part">partial</span></td></tr>
+        <tr><td>PEEK</td><td><span class="pill yes">yes</span></td><td><span class="pill yes">engine</span></td><td><span class="pill no">no</span></td><td><span class="pill yes">yes</span></td><td><span class="pill part">research</span></td></tr>
+        <tr><td>CacheRoute</td><td><span class="pill yes">yes</span></td><td><span class="pill no">no</span></td><td><span class="pill part">partial</span></td><td><span class="pill no">no</span></td><td><span class="pill part">partial</span></td></tr>
+        <tr><td>DualMap</td><td><span class="pill yes">yes</span></td><td><span class="pill no">no</span></td><td><span class="pill no">no</span></td><td><span class="pill part">SLO switch</span></td><td><span class="pill part">simulator</span></td></tr>
+        <tr><td>Preble</td><td><span class="pill yes">yes</span></td><td><span class="pill no">no</span></td><td><span class="pill no">no</span></td><td><span class="pill no">no</span></td><td><span class="pill no">no</span></td></tr>
+        <tr class="target"><td>Bales target</td><td><span class="pill yes">yes</span></td><td><span class="pill yes">gateway</span></td><td><span class="pill yes">fitted</span></td><td><span class="pill yes">bounded</span></td><td><span class="pill yes">open</span></td></tr>
       </tbody>
     </table>
-    <p class="small">The uncovered cell is the combination: an engine-agnostic gateway that coalesces in-flight duplicates, prices the hit with a fitted model, and bounds the wait.</p>
+    <div class="legend-row"><span><span class="pill yes">yes</span> present</span><span><span class="pill part">partial</span> restricted or delegated</span><span><span class="pill no">no</span> absent</span></div>
+    <p class="small">The combination in the last row is the prototype's target. The table is a qualitative comparison; the report lists the sources and limits.</p>
   </div>
 </section>
 
-<section class="slide" id="slide-5" data-title="Thesis">
+<section class="slide" id="slide-6" data-title="Request path">
   <div class="inner">
-    <div class="eyebrow">04 · Thesis</div>
-    <h2>A missing gateway primitive</h2>
-    <p class="thesis"><em>Engine-agnostic in-flight prefix coalescing</em> with a load-aware hold rule.</p>
-    <div class="cards three">
-      <div class="card"><span class="num">01</span><h3>Coalesce</h3><p>Wait for a leader only when the saved prefill beats the wait. Otherwise spill to spare capacity.</p></div>
-      <div class="card"><span class="num">02</span><h3>Price</h3><p>Fit the prefill model per deployment. Use the exact saving in routing and hold decisions.</p></div>
-      <div class="card"><span class="num">03</span><h3>Bound</h3><p>Give stream and batch traffic static virtual deadlines and cap admitted work.</p></div>
-    </div>
-    <pre class="ascii pipe" id="asciiPipe" aria-label="Animated ASCII pipeline"></pre>
-  </div>
-</section>
-
-<section class="slide" id="slide-6" data-title="Architecture">
-  <div class="inner">
-    <div class="eyebrow">05 · Architecture</div>
-    <h2>Gateway and replicas</h2>
-    <div class="cols wide-right">
-      <div class="arch-wrap">
-        <svg class="arch" viewBox="0 0 720 430" role="img" aria-label="Gateway architecture">
-          <defs>
-            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker>
-          </defs>
-          <rect x="12" y="168" width="110" height="64" rx="9" class="svg-box"/>
-          <text x="67" y="194" text-anchor="middle" class="svg-title">Client</text>
-          <text x="67" y="212" text-anchor="middle" class="svg-sub">JSON / SSE</text>
-
-          <rect x="158" y="40" width="360" height="330" rx="14" class="svg-panel"/>
-          <text x="178" y="64" class="svg-title">Bales gateway</text>
-
-          <rect x="178" y="80" width="320" height="48" rx="8" class="svg-gate"/>
-          <text x="192" y="100" class="svg-title">Admission</text>
-          <text x="192" y="116" class="svg-sub">cap queued work, return 429</text>
-
-          <rect x="178" y="144" width="320" height="48" rx="8" class="svg-gate"/>
-          <text x="192" y="164" class="svg-title">Virtual-deadline queue</text>
-          <text x="192" y="180" class="svg-sub">stream 300 ms / batch 5 s</text>
-
-          <rect x="178" y="208" width="320" height="48" rx="8" class="svg-gate"/>
-          <text x="192" y="228" class="svg-title">Prefix coalescer</text>
-          <text x="192" y="244" class="svg-sub">leader registry, hold or spill</text>
-
-          <rect x="178" y="272" width="320" height="48" rx="8" class="svg-gate"/>
-          <text x="192" y="292" class="svg-title">ECT router</text>
-          <text x="192" y="308" class="svg-sub">cost model, KV, ITL, affinity</text>
-
-          <rect x="558" y="40" width="150" height="330" rx="14" class="svg-panel warm"/>
-          <text x="633" y="64" text-anchor="middle" class="svg-title">Replicas</text>
-          <rect x="576" y="88" width="114" height="60" rx="8" class="svg-rep"/><text x="633" y="112" text-anchor="middle" class="svg-title">GPU 0</text><text x="633" y="130" text-anchor="middle" class="svg-sub">prefix cache</text>
-          <rect x="576" y="168" width="114" height="60" rx="8" class="svg-rep"/><text x="633" y="192" text-anchor="middle" class="svg-title">GPU 1</text><text x="633" y="210" text-anchor="middle" class="svg-sub">prefix cache</text>
-          <rect x="576" y="248" width="114" height="60" rx="8" class="svg-rep"/><text x="633" y="272" text-anchor="middle" class="svg-title">GPU N</text><text x="633" y="290" text-anchor="middle" class="svg-sub">/metrics</text>
-
-          <path d="M122 200 L158 200" class="flow"/>
-          <path d="M338 128 L338 144" class="flow"/>
-          <path d="M338 192 L338 208" class="flow"/>
-          <path d="M338 256 L338 272" class="flow"/>
-          <path d="M498 296 L558 296" class="flow"/>
-          <path d="M633 370 L633 400 L338 400 L338 320" class="flow dash"/>
-          <text x="485" y="418" text-anchor="middle" class="svg-sub">TTFT · cached_tokens · queue depth → calibrator and auditor</text>
-
-          <circle r="4" class="packet"><animateMotion dur="5s" repeatCount="indefinite" path="M122 200 L158 200 L338 200 L338 296 L558 296"/></circle>
-        </svg>
-      </div>
-      <div>
-        <ol class="steps">
-          <li><b>Hash</b> prompt into tenant-salted blocks. The final chain hash is the coalescing key.</li>
-          <li><b>Admit</b> within a queued-work cap, then assign a static virtual deadline.</li>
-          <li><b>Decide</b> hold or spill in milliseconds; register the leader before dispatch.</li>
-          <li><b>Route</b> by earliest completion time under KV and ITL constraints.</li>
-          <li><b>Audit</b> predicted cached tokens against the engine report.</li>
-        </ol>
-        <p class="small">Model state stays in the replicas. The gateway stores only scheduling state, so a restart loses no weights or KV blocks.</p>
-      </div>
+    <div class="eyebrow">05 · How it works</div>
+    <h2>One request, six stops</h2>
+    <pre class="ascii wide flow-ascii" id="asciiFlow" aria-label="Animated request pipeline"></pre>
+    <div class="cards three tech-notes">
+      <div class="card"><h3>Standard servers</h3><p>The GPU side is an OpenAI-compatible server. No custom engine is required for the gateway.</p></div>
+      <div class="card"><h3>No model state</h3><p>The gateway stores scheduling state only. A restart does not lose weights or KV blocks.</p></div>
+      <div class="card"><h3>Measured, then corrected</h3><p>Every prediction is recorded and compared with the engine's cached-token report.</p></div>
     </div>
   </div>
 </section>
 
-<section class="slide" id="slide-7" data-title="Cost model">
+<section class="slide" id="slide-7" data-title="Reading cost">
   <div class="inner">
-    <div class="eyebrow">06 · Cost model</div>
-    <h2>Price the prefill in milliseconds</h2>
+    <div class="eyebrow">06 · Reading cost</div>
+    <h2>Reading a prompt has a price</h2>
     <div class="cols controls-right">
       <div>
-        <div class="formula">cost(q, c) = a·q·c + b·q(q+1)/2 + f·q + g</div>
-        <div class="control"><label for="qRange">new query tokens <output id="qVal">2048</output></label><input id="qRange" type="range" min="128" max="8192" step="64" value="2048"></div>
-        <div class="control"><label for="cRange">cached context tokens <output id="cVal">4096</output></label><input id="cRange" type="range" min="0" max="16384" step="256" value="4096"></div>
+        <p class="lead">A cache hit removes the reading work for the shared part. The saved time is the price of that reading, and it grows faster than the prefix because attention also grows.</p>
+        <div class="control"><label for="qRange">new words to read <output id="qVal">2,048</output></label><input id="qRange" type="range" min="256" max="8192" step="128" value="2048"></div>
+        <div class="control"><label for="cRange">shared words in memory <output id="cVal">4,096</output></label><input id="cRange" type="range" min="0" max="8192" step="128" value="4096"></div>
         <div class="metric-grid">
-          <div><span>prefill cost</span><b id="costOut">-</b></div>
-          <div><span>cold prefill</span><b id="coldOut">-</b></div>
-          <div><span>hit saving</span><b id="saveOut">-</b></div>
-          <div><span>attention share</span><b id="attnOut">-</b></div>
+          <div><span>warm request</span><b id="costOut">178 ms</b></div>
+          <div><span>cold request</span><b id="coldOut">439 ms</b></div>
+          <div><span>saved</span><b id="saveOut">261 ms</b></div>
+          <div><span>attention share</span><b id="attnOut">41%</b></div>
         </div>
-        <p class="small">q is new query tokens and c is the cached context. The cold comparison uses the full prompt q+c. Defaults approximate a Qwen2.5-1.5B class model on a T4; a deployment replaces them with idle-replica calibration.</p>
+        <p class="small">The simple form: reading cost = attention over shared text + attention over new text + fixed work. The full model is fitted per deployment.</p>
       </div>
       <div class="chart-card">
-        <div class="card-label">cost vs query length</div>
-        <svg id="costChart" viewBox="0 0 540 300" role="img" aria-label="Cost model chart"></svg>
-        <div class="legend"><span class="dot teal"></span>with cached context <span class="dot gold"></span>cold</div>
+        <div class="card-label">same request, with and without the shared prefix</div>
+        <pre class="ascii cost-ascii" id="asciiCost" aria-label="Animated cold and warm reading bars"></pre>
+        <p class="small">The gold delay is the budget available for waiting. Bales holds a follower only when the saved block is larger than the wait.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="slide" id="slide-8" data-title="Hold or spill">
+<section class="slide" id="slide-8" data-title="Wait or move">
   <div class="inner">
-    <div class="eyebrow">07 · Coalescing</div>
-    <h2>Hold-or-spill decision</h2>
+    <div class="eyebrow">07 · Share or move</div>
+    <h2>Wait only when the saving is bigger</h2>
     <div class="cols controls-right">
       <div>
-        <div class="formula">hold iff&nbsp; saving(L) &minus; &tau; &minus; (wait<sub>leader</sub> &minus; wait<sub>best</sub>) &gt; &epsilon;</div>
-        <div class="control"><label for="lRange">shared prefix L <output id="lVal">4096</output></label><input id="lRange" type="range" min="0" max="8192" step="128" value="4096"></div>
-        <div class="control"><label for="tauRange">leader remaining &tau; <output id="tauVal">60</output> ms</label><input id="tauRange" type="range" min="0" max="300" step="5" value="60"></div>
-        <div class="control"><label for="gapRange">queue wait gap <output id="gapVal">0</output> ms</label><input id="gapRange" type="range" min="-150" max="150" step="5" value="0"></div>
-        <div class="control"><label for="slackRange">request slack <output id="slackVal">2000</output> ms</label><input id="slackRange" type="range" min="50" max="2000" step="50" value="2000"></div>
-        <div class="decision-row">
-          <span class="decision" id="holdDecision">HOLD</span>
-          <span class="small" id="holdReason">saving 261 ms, wait 60 ms</span>
-        </div>
+        <div class="formula">wait if&nbsp; saved reading &gt; time left + extra queue</div>
+        <div class="control"><label for="lRange">shared prefix <output id="lVal">4,096</output> words</label><input id="lRange" type="range" min="0" max="8192" step="128" value="4096"></div>
+        <div class="control"><label for="tauRange">leader has left <output id="tauVal">60</output> ms</label><input id="tauRange" type="range" min="0" max="300" step="5" value="60"></div>
+        <div class="control"><label for="gapRange">extra queue on the leader <output id="gapVal">0</output> ms</label><input id="gapRange" type="range" min="-150" max="150" step="5" value="0"></div>
+        <div class="control"><label for="slackRange">request can wait <output id="slackVal">2000</output> ms</label><input id="slackRange" type="range" min="50" max="2000" step="50" value="2000"></div>
+        <div class="decision-row"><span class="decision" id="holdDecision">HOLD</span><span class="small" id="holdReason">saved 261 ms, wait 60 ms</span></div>
       </div>
       <div class="chart-card">
-        <div class="card-label">leader and follower</div>
-        <pre class="ascii hold" id="asciiHold" aria-label="Animated leader follower diagram"></pre>
+        <div class="card-label">the leader and the follower</div>
+        <pre class="ascii hold" id="asciiHold" aria-label="Animated leader and follower bars"></pre>
         <div class="bar-compare">
-          <div class="compare-row"><span>saved prefill</span><div class="compare"><i class="teal" id="saveBar"></i></div><b id="saveLabel">261</b></div>
-          <div class="compare-row"><span>wait cost</span><div class="compare"><i class="gold" id="waitBar"></i></div><b id="waitLabel">60</b></div>
+          <div class="compare-row"><span>saved</span><div class="compare"><i class="teal" id="saveBar"></i></div><b id="saveLabel">261</b></div>
+          <div class="compare-row"><span>wait</span><div class="compare"><i class="gold" id="waitBar"></i></div><b id="waitLabel">60</b></div>
         </div>
-        <p class="small">The hold deadline is capped by <code>min(1.5 &tau;, slack, 250 ms)</code>. A leader that dies before its first byte releases followers to spill.</p>
+        <p class="small">The wait is capped by the request's patience and a 250 ms ceiling. A dead leader releases its followers to move.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="slide" id="slide-9" data-title="Deadline queue">
+<section class="slide" id="slide-9" data-title="Queue">
   <div class="inner">
-    <div class="eyebrow">08 · Queue</div>
-    <h2>Virtual-deadline queue</h2>
+    <div class="eyebrow">08 · Who goes first</div>
+    <h2>Two lanes, one waiting room</h2>
     <div class="cols controls-right">
       <div>
-        <div class="formula">d<sub>i</sub> = t<sub>i</sub> + D<sub>class</sub> + &eta;·cost<sub>i</sub></div>
-        <div class="control"><label for="dStream">stream deadline <output id="dStreamVal">300</output> ms</label><input id="dStream" type="range" min="100" max="800" step="50" value="300"></div>
+        <p class="lead">Chat needs a short deadline. Batch work can wait, but it must not wait forever. Bales gives each request a fixed deadline and serves the earliest one first.</p>
+        <div class="control"><label for="dStream">chat deadline <output id="dStreamVal">300</output> ms</label><input id="dStream" type="range" min="100" max="800" step="50" value="300"></div>
         <div class="control"><label for="dBatch">batch deadline <output id="dBatchVal">5000</output> ms</label><input id="dBatch" type="range" min="500" max="8000" step="250" value="5000"></div>
-        <div class="control"><label for="etaRange">cost weight &eta; <output id="etaVal">1.0</output></label><input id="etaRange" type="range" min="0" max="2" step="0.1" value="1"></div>
-        <div class="bound">W<sub>i</sub> &le; (Q<sub>max</sub> + A(&Delta;<sub>i</sub>)) / C + s<sub>max</sub></div>
-        <p class="small">Deadlines are static, so insertion is O(log n) and the heap never reheapifies. The bound is fuzzed over 200 randomized traces.</p>
+        <div class="control"><label for="etaRange">weight on reading cost <output id="etaVal">1.0</output></label><input id="etaRange" type="range" min="0" max="2" step="0.1" value="1"></div>
+        <div class="bound">cap the waiting room + order by deadline = a finite wait</div>
+        <p class="small">With a 5 s batch deadline, earliest-deadline-first behaves almost like strict priority. Shortening the batch deadline creates a real tradeoff between chat latency and batch progress.</p>
       </div>
       <div class="chart-card">
         <div class="card-label">arrival to deadline</div>
-        <svg id="queueChart" viewBox="0 0 540 260" role="img" aria-label="Queue deadline chart"></svg>
+        <pre class="ascii queue-ascii" id="asciiQueue" aria-label="Animated ASCII queue timeline"></pre>
         <div class="chip-row" id="queueOrder"></div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="slide" id="slide-10" data-title="ECT routing">
+<section class="slide" id="slide-10" data-title="Routing">
   <div class="inner">
-    <div class="eyebrow">09 · Routing</div>
-    <h2>Earliest completion time in milliseconds</h2>
-    <div class="formula wide">ECT = queue wait + cost(uncached, cached) / speed + interference</div>
+    <div class="eyebrow">09 · Pick a GPU</div>
+    <h2>Pick the GPU that finishes first</h2>
+    <p class="lead">Reading time, queue time, and interference are added in milliseconds. The smallest number wins. KV capacity and a latency guard can remove a candidate.</p>
     <div class="policy-toggle" role="group" aria-label="Policy">
-      <button type="button" data-policy="rr">round robin</button>
       <button type="button" data-policy="tokens">least tokens</button>
       <button type="button" data-policy="ect" class="on">Bales ECT</button>
     </div>
-    <div class="replica-grid" id="replicaGrid"></div>
-    <p class="small" id="ectReason">ECT chooses replica 2: it trades a small queue for a large cache hit.</p>
+    <pre class="ascii wide score-ascii" id="asciiEct" aria-label="ASCII replica scoreboard"></pre>
+    <p class="small" id="ectReason">ECT chooses GPU 2: a small queue beats a larger cache on GPU 0.</p>
   </div>
 </section>
 
-<section class="slide" id="slide-11" data-title="Affinity gate">
+<section class="slide" id="slide-11" data-title="Affinity">
   <div class="inner">
-    <div class="eyebrow">10 · Affinity</div>
-    <h2>Affinity has a threshold</h2>
+    <div class="eyebrow">10 · Keep or spread</div>
+    <h2>Affinity has a cost</h2>
     <div class="cols controls-right">
       <div>
-        <div class="formula">recoverable = &lambda; · saving(prefix)</div>
-        <div class="control"><label for="rateRange">group rate <output id="rateVal">10</output> req/s</label><input id="rateRange" type="range" min="1" max="20" step="1" value="10"></div>
-        <div class="control"><label for="prefixRange">shared prefix <output id="prefixVal">4096</output> tokens</label><input id="prefixRange" type="range" min="0" max="8192" step="256" value="4096"></div>
-        <div class="decision-row"><span class="decision" id="gateDecision">REPLICATE</span><span class="small" id="gateReason">3 replicas</span></div>
-        <div class="gate-bar"><i id="gateFill"></i><span>threshold</span></div>
-        <p class="small">Spread when recoverable work is small, pin when one replica can carry the group, replicate when the group needs k replicas.</p>
+        <p class="lead">Sending a prefix group to one GPU keeps the cache hot. It can also overload that GPU. The gate chooses spread, pin, or replicate from the work the cache saves.</p>
+        <div class="control"><label for="rateRange">group rate <output id="rateVal">6</output> req/s</label><input id="rateRange" type="range" min="1" max="20" step="1" value="6"></div>
+        <div class="control"><label for="prefixRange">shared prefix <output id="prefixVal">4,096</output> words</label><input id="prefixRange" type="range" min="0" max="8192" step="256" value="4096"></div>
+        <div class="decision-row"><span class="decision" id="gateDecision">REPLICATE</span><span class="small" id="gateReason">2 replicas, recoverable 1566 ms/s</span></div>
+        <p class="small">Single-pin affinity was two to three times worse than round robin on hot traces. The gate prescribes replicate for those groups.</p>
       </div>
-      <div class="note-card">
-        <div class="card-label">what the simulation showed</div>
-        <p>Single-pin affinity was 2 to 3 times worse than round robin on hot traces. The gate prescribes replicate for those traces, which the prototype has not yet implemented as a routing policy.</p>
-        <p class="small">The gate is a first-class part of the design.</p>
+      <div class="chart-card">
+        <div class="card-label">load on four GPUs</div>
+        <pre class="ascii gate-ascii" id="asciiGate" aria-label="ASCII GPU load bars"></pre>
+        <p class="small">The compact pattern is the load. The gate decides whether to concentrate it or spread it.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="slide" id="slide-12" data-title="Prototype">
+<section class="slide" id="slide-12" data-title="Status">
   <div class="inner">
-    <div class="eyebrow">11 · Prototype</div>
-    <h2>A working prototype</h2>
+    <div class="eyebrow">11 · Status</div>
+    <h2>What the prototype has reached</h2>
     <div class="metric-grid four">
+      <div><span>core packages</span><b>9</b></div>
+      <div><span>claims in the ledger</span><b>26</b></div>
       <div><span>decision core</span><b>15.9 ns</b></div>
-      <div><span>ECT pick, 8 replicas</span><b>33.9 ns</b></div>
-      <div><span>chained hashing</span><b>1.08 GB/s</b></div>
-      <div><span>claims in ledger</span><b>26</b></div>
+      <div><span>test suites</span><b>all pass</b></div>
     </div>
-    <div class="tabs">
-      <div class="tab-buttons" role="tablist">
-        <button type="button" data-tab="gateway" class="on">gateway</button>
-        <button type="button" data-tab="sim">simulator</button>
-        <button type="button" data-tab="evidence">evidence</button>
-      </div>
-      <pre class="tab-panel on" data-panel="gateway"><code><span class="c"># two mock workers and one gateway</span>
-./bin/bales-gateway -replicas http://127.0.0.1:9001,http://127.0.0.1:9002 \
-  -telemetry evidence/runs/gateway.csv
-
-<span class="c"># four staggered copies of one prompt</span>
-./scripts/demo.sh
-holds 2   released 2   spills 1   leader_ready 1</code></pre>
-      <pre class="tab-panel" data-panel="sim"><code><span class="c"># trace-driven experiments, three seeds</span>
-./bin/bales-simulate -exp all -out evidence/runs -seeds 3
-
-burst     RR 504.6 ms   ECT 509.1 ms   coalesced 142.5 ms
-prefill   3886.6 ms     3886.6 ms      509.4 ms</code></pre>
-      <pre class="tab-panel" data-panel="evidence"><code><span class="c"># CI checks the ledger schema and status values</span>
-python3 scripts/check_claims.py
-claims=26 status={'✅': 21, '❓': 2, '⚠️': 3}
-
-go test ./...        # all packages pass
-go test -race ./...  # all packages pass</code></pre>
-    </div>
-    <p class="small">No GPU runs. The cluster numbers come from the simulator; the microbenchmarks ran on an Apple M5 host.</p>
+    <table class="matrix status-table">
+      <thead><tr><th>Plan phase</th><th>Status</th><th>Evidence</th></tr></thead>
+      <tbody>
+        <tr><td>P0 problem measurement and cost profile</td><td><span class="pill part">partial</span></td><td>Simulator shows duplicate prefill; no GPU profile yet.</td></tr>
+        <tr><td>P1 core mechanisms</td><td><span class="pill yes">done</span></td><td>Hash, cost fit, queue, coalescer, router, tests.</td></tr>
+        <tr><td>P2 gateway</td><td><span class="pill yes">done</span></td><td>HTTP proxy, SSE, demo with two mock workers.</td></tr>
+        <tr><td>P3 simulation and evidence</td><td><span class="pill yes">done</span></td><td>Five experiment families, 26 claims, SVG figures.</td></tr>
+        <tr><td>P4 T4 calibration, fidelity, tuned baselines</td><td><span class="pill no">not started</span></td><td>The next gate; no GPU runs yet.</td></tr>
+        <tr><td>Documentation and reproducibility</td><td><span class="pill yes">ahead</span></td><td>Report, deck, study guide, CI, claims check.</td></tr>
+      </tbody>
+    </table>
+    <p class="small">Ahead on implementation and reproducibility. Behind on hardware evidence and fair baseline comparison.</p>
   </div>
 </section>
 
-<section class="slide" id="slide-13" data-title="Results: burst">
+<section class="slide" id="slide-13" data-title="Next">
   <div class="inner">
-    <div class="eyebrow">12 · Results</div>
-    <h2>Cold burst: coalescing removes the herd</h2>
-    <div class="metric-toggle" role="group" aria-label="Metric">
-      <button type="button" data-metric="p50" class="on">P50 TTFT</button>
-      <button type="button" data-metric="prefill">prefill work</button>
-      <button type="button" data-metric="dup">duplicate ratio</button>
+    <div class="eyebrow">12 · Optimizations</div>
+    <h2>What we need to reach the target</h2>
+    <div class="priority-grid">
+      <div class="priority"><span class="rank">1</span><b>T4 and vLLM calibration</b><p>Measure duplicate prefill, fit the cost model on an idle replica, run the burst on real hardware.</p><em>unlocks H1, H4</em></div>
+      <div class="priority"><span class="rank">2</span><b>Simulator fidelity</b><p>Add continuous decode batching and compare against two real replicas. The gate is 10 percent MAPE.</p><em>unlocks large-R claims</em></div>
+      <div class="priority"><span class="rank">3</span><b>Tuned baselines</b><p>Give llm-d, Dynamo, DualMap, Preble, and CacheRoute the same tuning budget as Bales.</p><em>unlocks fair comparison</em></div>
+      <div class="priority"><span class="rank">4</span><b>Gated affinity and nested prefixes</b><p>Wire the gate into a routing policy and extend coalescing to shared prefixes with different suffixes.</p><em>unlocks C1, C4</em></div>
+      <div class="priority"><span class="rank">5</span><b>Security review and KV events</b><p>Add a threat model for timing leaks and a precise cache mode from engine events.</p><em>unlocks deployment</em></div>
+      <div class="priority"><span class="rank">6</span><b>Overhead and capacity tuning</b><p>Try xxHash, tune directory size, and measure hashing cost per KB on the target host.</p><em>polish</em></div>
     </div>
-    <div class="cols wide-right">
-      <div class="chart-card large">
-        <svg id="burstChart" viewBox="0 0 720 360" role="img" aria-label="Burst results chart"></svg>
-      </div>
-      <div class="result-side">
-        <div class="stat-big"><b>72%</b><span>lower P50 TTFT</span></div>
-        <div class="stat-big"><b>87%</b><span>less prefill work</span></div>
-        <div class="stat-big"><b>29</b><span>followers released to a warm cache</span></div>
-        <p class="small">32 requests, 2048-token prompt, 3 ms stagger, 4 replicas, 3 seeds. Simulated single-slot prefill model. Baselines are simplified and untuned.</p>
-      </div>
-    </div>
+    <p class="small">The first three unlock a publishable result. The last three make the prototype deployable.</p>
   </div>
 </section>
 
-<section class="slide" id="slide-14" data-title="Results: queue and long context">
+<section class="slide" id="slide-14" data-title="Results">
   <div class="inner">
     <div class="eyebrow">13 · Results</div>
-    <h2>Queue and long-context results</h2>
-    <div class="cols two">
-      <div class="chart-card">
-        <div class="card-label">queue · rate <select id="rateSelect"><option>5</option><option selected>8</option><option>11</option><option>14</option></select> req/s</div>
-        <svg id="tradeChart" viewBox="0 0 520 280" role="img" aria-label="Queue tradeoff chart"></svg>
-        <div class="legend" id="tradeLegend"></div>
+    <h2>What we measured</h2>
+    <div class="results-grid">
+      <div class="result-panel">
+        <div class="card-label">cold burst · P50 TTFT</div>
+        <svg id="burstMini" viewBox="0 0 360 220" role="img" aria-label="Burst results"></svg>
+        <div class="result-caption">504.6 ms round robin → 142.5 ms with sharing</div>
       </div>
-      <div class="chart-card">
+      <div class="result-panel">
+        <div class="card-label">queue · stream P99</div>
+        <svg id="queueMini" viewBox="0 0 360 220" role="img" aria-label="Queue tradeoff"></svg>
+        <div class="result-caption">5,025 ms FIFO → 562 ms strict priority</div>
+      </div>
+      <div class="result-panel">
         <div class="card-label">long context · P99 TTFT</div>
-        <svg id="longChart" viewBox="0 0 520 280" role="img" aria-label="Long context chart"></svg>
-        <div class="legend"><span class="dot gray"></span>least tokens <span class="dot teal"></span>Bales ECT</div>
+        <svg id="longMini" viewBox="0 0 360 220" role="img" aria-label="Long context results"></svg>
+        <div class="result-caption">3,036 ms least tokens → 1,209 ms ECT</div>
       </div>
     </div>
-    <p class="small">Strict priority protects streams and starves batch work. EDF with the default 5 s batch deadline matches strict priority; a shorter deadline moves latency back to streams. Long-context ECT lowers P99 from 3036 ms to 1209 ms at 6 req/s.</p>
+    <div class="stat-strip">
+      <div><b>87%</b><span>less prefill work in the burst</span></div>
+      <div><b>2.5×</b><span>lower long-context P99 at 6 req/s</span></div>
+      <div><b>8.9×</b><span>lower stream P99 under strict priority</span></div>
+    </div>
+    <p class="small">Simulated, three seeds, four replicas. Baselines are simplified and untuned. No GPU measurements yet.</p>
   </div>
 </section>
 
-<section class="slide" id="slide-15" data-title="Close">
-  <div class="inner">
-    <div class="eyebrow">14 · Close</div>
-    <h2>Summary and next steps</h2>
-    <div class="cards three close-cards">
-      <div class="card"><h3>Built</h3><ul><li>Working Go gateway and mock engine</li><li>Hold-or-spill coalescer with a bounded deadline</li><li>Cost fit, virtual queue, ECT, gate, telemetry</li><li>Simulator, tests, evidence ledger, CI</li></ul></div>
-      <div class="card"><h3>Measured</h3><ul><li>Coalescing cuts simulated burst prefill by 87%</li><li>P50 TTFT falls from 504.6 ms to 142.5 ms</li><li>Long-context P99 falls from 3036 ms to 1209 ms</li><li>EDF trades batch wait against stream latency</li></ul></div>
-      <div class="card"><h3>Next</h3><ul><li>T4 and vLLM calibration</li><li>Tuned llm-d, Dynamo, DualMap baselines</li><li>Nested-prefix coalescing for agent fan-out</li><li>Gated affinity policy and security review</li></ul></div>
-    </div>
-    <p class="closing">The prototype is on branch <code>proto</code> at <b>github.com/ab1nv/bales</b>. The report, study guide, and evidence ledger ship with it.</p>
-    <p class="small">Questions are welcome. The next step is to choose the first GPU experiment.</p>
+<section class="slide" id="slide-15" data-title="Thank you">
+  <div class="inner thankyou">
+    <img src="assets/logo.png" alt="Bales logo">
+    <h1>Thank you</h1>
+    <p class="subtitle">Questions and discussion</p>
+    <p class="small">Bales prototype · Abhinav Singh · github.com/ab1nv/bales · branch proto</p>
   </div>
 </section>
 
